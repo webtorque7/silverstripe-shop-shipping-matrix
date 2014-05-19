@@ -111,7 +111,6 @@ class ShippingMatrixModifier extends ShippingModifier{
 				$nonWineProductWeight += $item->product()->Weight;
 			}
 		}
-		//Debug::dump($nonWineProductWeight);exit;
 
 		/*
 		 * For Wine products
@@ -126,12 +125,15 @@ class ShippingMatrixModifier extends ShippingModifier{
 		}
 
 		$shippingOption = $data['ShippingOptions'];
-		if($shippingOption && $shippingOption != 'free'){
-			if($shippingOption == 'domestic'){
+		if($shippingOption){
+			if($shippingOption == 'domestic' || $shippingOption == 'free-domestic'){
 				$this->IsDomestic = true;
 				$region = DomesticShippingRegion::get();
+				$shippingCharge = 0;
 				if($region->count() == 1){
-					$shippingCharge = $region->first()->Amount;
+					if($shippingOption == 'domestic'){
+						$shippingCharge = $region->first()->Amount;
+					}
 					$totalCharge += ($wineCrates * $shippingCharge);
 
 					//add in the charge for non wine based on weight
@@ -171,11 +173,13 @@ class ShippingMatrixModifier extends ShippingModifier{
 
 				}
 			}
+			else if ($shippingOption == 'free'){
+				$this->IsPickup = true;
+			}
 		}
 
 		$totalCharge += $this->getCalculateShippingMargin($totalCharge, $shippingSettings->ShippingMargin);
 		$this->Amount = $totalCharge;
-		Debug::dump($this->Amount);exit;
 		$this->write();
 	}
 
