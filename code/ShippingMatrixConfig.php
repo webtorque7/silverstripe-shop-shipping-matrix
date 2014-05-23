@@ -16,7 +16,8 @@ class ShippingMatrixConfig extends DataExtension{
 		'ShippingMessage' => 'HTMLText',
 		'AllowPickup' => 'Boolean',
 		'DomesticCountry' => 'Varchar',
-		'FreeShippingQuantity' => 'Int'
+		'FreeShippingQuantity' => 'Int',
+		'InternationalShippingWarningMessage' => 'HTMLText'
 	);
 
 	public function updateCMSFields(FieldList $fields) {
@@ -25,7 +26,8 @@ class ShippingMatrixConfig extends DataExtension{
 			$maintab = new Tab("Main",
 				TextField::create('FreeShippingQuantity', 'Free Shipping Quantity'),
 				CheckboxField::create('AllowPickup', 'Allow Pickup'),
-				HtmlEditorField::create('ShippingMessage', 'Shipping Message')->setRows(20)
+				HtmlEditorField::create('ShippingMessage', 'Shipping Message')->setRows(20),
+				HtmlEditorField::create('InternationalShippingWarningMessage', 'International Shipping Warning Message')->setRows(20)
 			),
 			$internationalShippingCarrier = new Tab("InternationalShipping",
 				GridField::create(
