@@ -9,68 +9,50 @@
 class InternationalShippingCarrier extends DataObject{
 	private static $db = array(
 		'Title' => 'Varchar(100)',
-		'MinimumWeigth' => 'Decimal',
-		'Sort' => 'Int'
+		'Sort' => 'Int',
+		'UnitType' => 'Varchar(100)'
 	);
 
 	private static $belongs_to = array(
 		'ShippingMatrixModifier' => 'ShippingMatrixModifier'
 	);
 
-	private static $has_many = array(
-		'CarrierShippingZones' => 'CarrierShippingZone'
-	);
-
 	private static $many_many = array(
-		'InternationalShippingWeightRanges' => 'InternationalShippingWeightRange',
+		'InternationalShippingZones' => 'InternationalShippingZone',
+		'ShippingWeightRanges' => 'ShippingWeightRange',
+		'ShippingQuantityRanges' => 'ShippingQuantityRange'
 	);
-
-	public function getWeightRange($weight){
-		return InternationalShippingWeightRange::get()->filter(array(
-				'MinWeight:GreaterThanEqual' => $weight,
-				'MaxWeight:LessThanEqual' => $weight
-			)
-		)->first();
-	}
-
-	public function getInternationalCourierTitle(){
-		return 'Courier Shipping ('.$this->Title.')';
-	}
 
 	public function getCMSFields(){
 		$fields = parent::getCMSFields();
-
+		$fields->addFieldToTab('Root.Main', new CheckboxSetField('UnitType', 'Unit Type', array('Weight','Quantity')));
 		$fields->removeByName('Sort');
-//		$fields->removeByName('CarrierShippingZones');
-//		$fields->removeByName('InternationalShippingWeightRanges');
+		$fields->removeByName('InternationalShippingZones');
+		$fields->removeByName('ShippingWeightRanges');
+		$fields->removeByName('ShippingQuantityRanges');
 
-//		$config = GridFieldConfig::create()
-//			->addComponent(new GridFieldFilterHeader())
-//			->addComponent(new GridFieldButtonRow('before'))
-//			->addComponent(new GridFieldDataColumns())
-//			->addComponent($existingSearch = new GridFieldAddExistingSearchButton('toolbar-header-right'))
-//			->addComponent(new GridFieldToolbarHeader())
-//			->addComponent(new GridFieldTitleHeader())
-//			->addComponent(new GridFieldDeleteAction(true));
+		$shippingZoneGrid = GridField::create(
+			'InternationalShippingZones',
+			'International Shipping Zones',
+			$this->InternationalShippingZones(),
+			GridFieldConfig_RelationEditor::create()
+				->addComponent(GridFieldOrderableRows::create('Sort')));
 
-//		if($this->record['ID'] <> 0){
-//			//$fields->addFieldToTab('Root.CarrierShippingZones', $grid = GridField::create('CarrierShippingZones', 'CarrierShippingZones', $this->CarrierShippingZones()));
-//			$fields->addFieldToTab('Root.InternationalShippingWeightRanges', $grid = GridField::create('InternationalShippingWeightRanges', 'InternationalShippingWeightRanges', $this->InternationalShippingWeightRanges(), $config));
-//		}
+		$weightRangeGrid = GridField::create(
+			'ShippingWeightRanges',
+			'Shipping Weight Ranges',
+			$this->ShippingWeightRanges(),
+			GridFieldConfig_RelationEditor::create()
+				->addComponent(GridFieldOrderableRows::create('Sort')));
 
+		$quantityRangeGrid = GridField::create(
+			'ShippingQuantityRanges',
+			'Shipping Quantity Ranges',
+			$this->ShippingQuantityRanges(),
+			GridFieldConfig_RelationEditor::create()
+				->addComponent(GridFieldOrderableRows::create('Sort')));
+
+		$fields->addFieldsToTab('Root.Main', array($shippingZoneGrid, $weightRangeGrid, $quantityRangeGrid));
 		return $fields;
-	}
-
-	public function onBeforeWrite(){
-		parent::onBeforeWrite();
-
-		if($this->ID){
-			if($this->MinimumWeigth){
-				$do = $this->getWeightRange($this->MinimumWeight);
-				if($do){
-					$this->InternationalShippingWeightRanges()->add($do);
-				}
-			}
-		}
 	}
 }

@@ -3,6 +3,3 @@ Name: shippingextensions
 SiteConfig:
   extensions:
     - ShippingMatrixConfig
-Order:
-  extensions:
-    - OrderShippingExtension

@@ -1,12 +1,12 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: davis
- * Date: 06/11/13
- * Time: 13:53
+ * User: User
+ * Date: 9/05/14
+ * Time: 1:28 PM
  */
 
-class DomesticShippingExtra extends DataObject{
+class DomesticShippingRegion extends DataObject{
 	private static $db = array(
 		'Title' => 'Varchar(100)',
 		'Sort' => 'Int',
@@ -27,9 +27,9 @@ class DomesticShippingExtra extends DataObject{
 		$fields->removeByName('Sort');
 		$fields->removeByName('DomesticShippingCarriers');
 		$fields->addFieldsToTab('Root.Main', array(
-			TextField::create('Title', 'Title'),
+			TextField::create('Title', 'Region'),
 			TextField::create('Amount', 'Amount'),
 		));
 		return $fields;
 	}
-} 
+}

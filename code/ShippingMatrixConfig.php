@@ -8,14 +8,11 @@
 
 class ShippingMatrixConfig extends DataExtension{
 	private static $db = array(
-		'DomesticNorthIslandCharge' => 'Currency',
-		'DomesticSouthIslandCharge' => 'Currency',
-		'DomesticLocalCharge' => 'Currency',
+		'DomesticCountry' => 'Varchar',
 		'LocalCity' => 'Varchar(100)',
 		'ShippingMargin' => 'Percentage',
 		'ShippingMessage' => 'HTMLText',
 		'AllowPickup' => 'Boolean',
-		'DomesticCountry' => 'Varchar',
 		'FreeShippingQuantity' => 'Int',
 		'InternationalShippingWarningMessage' => 'HTMLText'
 	);
@@ -23,19 +20,13 @@ class ShippingMatrixConfig extends DataExtension{
 	public function updateCMSFields(FieldList $fields) {
 		$countries = SiteConfig::current_site_config()->getCountriesList();
 		$shippingTab = new TabSet("ShippingTabs",
-			$maintab = new Tab("Main",
+			$main = new Tab("Main",
 				TextField::create('FreeShippingQuantity', 'Free Shipping Quantity'),
 				CheckboxField::create('AllowPickup', 'Allow Pickup'),
 				HtmlEditorField::create('ShippingMessage', 'Shipping Message')->setRows(20),
 				HtmlEditorField::create('InternationalShippingWarningMessage', 'International Shipping Warning Message')->setRows(20)
 			),
-			$internationalShippingCarrier = new Tab("InternationalShipping",
-				GridField::create(
-					'ShippingZone',
-					'Shipping Zone',
-					ShippingZone::get(),
-					GridFieldConfig_RecordEditor::create()->addComponent(GridFieldOrderableRows::create('Sort'))
-				),
+			$internationalCarriers = new Tab("InternationalCarriers",
 				GridField::create(
 					'InternationalShippingCarrier',
 					'International Shipping Carrier',
@@ -43,7 +34,15 @@ class ShippingMatrixConfig extends DataExtension{
 					GridFieldConfig_RecordEditor::create()->addComponent(GridFieldOrderableRows::create('Sort'))
 				)
 			),
-			$shippingZone = new Tab("DomesticShipping",
+			$domesticCarriers = new Tab("DomesticCarriers",
+				GridField::create(
+					'DomesticShippingCarrier',
+					'Domestic Shipping Carrier',
+					DomesticShippingCarrier::get(),
+					GridFieldConfig_RecordEditor::create()->addComponent(GridFieldOrderableRows::create('Sort'))
+				)
+			),
+			$regionsAndZones = new Tab("RegionsAndZones",
 				DropdownField::create("DomesticCountry",_t('Address.COUNTRY','Dometstic Country'), $countries, 'NZ'),
 				GridField::create(
 					'DomesticShippingRegion',
@@ -52,30 +51,14 @@ class ShippingMatrixConfig extends DataExtension{
 					GridFieldConfig_RecordEditor::create()->addComponent(GridFieldOrderableRows::create('Sort'))
 				),
 				GridField::create(
-					'DomesticShippingExtra',
-					'Domestic Shipping Extra',
-					DomesticShippingExtra::get(),
+					'InternationalShippingZone',
+					'International Shipping Zone',
+					InternationalShippingZone::get(),
 					GridFieldConfig_RecordEditor::create()->addComponent(GridFieldOrderableRows::create('Sort'))
 				)
-			),
-			$itemWeights = new Tab("ShippingItemUnit",
-				GridField::create(
-					'ShippingItemUnit',
-					'Shipping Item Unit',
-					ShippingItemUnit::get(),
-					GridFieldConfig_RecordEditor::create()->addComponent(GridFieldOrderableRows::create('Sort'))
-				)
-			)
-//		        $shippingZone = new Tab("ParcelType",
-//				GridField::create(
-//					'ParcelType',
-//					'Parcel Type',
-//					ParcelType::get(),
-//					GridFieldConfig_RecordEditor::create()->addComponent(GridFieldOrderableRows::create('Sort'))
-//				)
-//			)
-		);
 
+			)
+		);
 		$fields->addFieldToTab('Root.Shop.ShopTabs.ShippingMatrix', $shippingTab);
 	}
 } 
