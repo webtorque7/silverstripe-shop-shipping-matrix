@@ -86,7 +86,7 @@ class InternationalShippingCarrier extends DataObject{
 		$totalWeight = 0;
 		foreach($this->items as $item){
 			$product = $item->buyable();
-			$totalWeight += $product->Weight;
+			$totalWeight += $product->Weight * $item->Quantity;
 		}
 		$weightRange = ShippingWeightRange::get()
 			->where($totalWeight . ' BETWEEN "MinWeight" AND "MaxWeight"');
@@ -97,9 +97,16 @@ class InternationalShippingCarrier extends DataObject{
 				'"InternationalShippingCarrier"."ID" = "ShippingRate"."InternationalShippingCarrierID"')
 			->where('"InternationalShippingZoneID" = ' . $zone->ID . '
 				AND "ShippingWeightRangeID" = ' . $weightRangeID)
-			->first()->AmountPerUnit;
+			->first();
 
-		$weightCharge = $totalWeight * $weightRate;
+		if(!empty($weightRate)){
+			$rate = $weightRate->AmountPerUnit;
+			$weightCharge = $totalWeight * $rate;
+		}
+		else{
+			user_error('The total weight of the items exceeds the maximum weight of our couriers,
+				please contact us to arrange other shipping methods.');
+		}
 		return $weightCharge;
 	}
 
@@ -119,7 +126,14 @@ class InternationalShippingCarrier extends DataObject{
 				AND "ShippingQuantityRangeID" = ' . $quantityRangeID)
 			->first()->AmountPerUnit;
 
-		$quantityCharge = $totalQuantity * $quantityRate;
+		if(!empty($quantityRate)){
+			$rate = $quantityRate->AmountPerUnit;
+			$quantityCharge = $totalQuantity * $rate;
+		}
+		else{
+			user_error('The total quantity of the items exceeds the maximum quantity of our couriers,
+				please contact us to explore other shipping methods.');
+		}
 		return $quantityCharge;
 	}
 
@@ -150,7 +164,13 @@ class InternationalShippingCarrier extends DataObject{
 		//get charge from each carrier
 		$charge = 0;
 		foreach ($carriers as $carrier) {
-			$charge += $carrier->calculate($shippingZone);
+			if(!empty($shippingZone)){
+				$charge += $carrier->calculate($shippingZone);
+			}
+			else{
+				user_error('Selected country is not supported,
+					please contact us to arrange other shipping methods.');
+			}
 		}
 		return $charge;
 	}
