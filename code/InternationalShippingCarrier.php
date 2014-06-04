@@ -82,48 +82,16 @@ class InternationalShippingCarrier extends DataObject{
 		return $fields;
 	}
 
-	public static function distributeItems($item){
-		/** Products don't have info on shipping unit type.
-		 *  Find the carrier that ships the product type and associate it with the item.
-		 */
-		$product = $item->buyable();
-		$carrier = InternationalShippingCarrier::get()
-			->where('"InternationalShippingCarrier"."SupportedProductType" LIKE \'%' . $product->ClassName . '%\'')
-			->first();
-
-		if(!empty($carrier)){
-			$unitType = $carrier->UnitType;
-			$unit = array();
-			if($unitType == 'Quantity'){
-				$unit = array($unitType, $item->Quantity);
-			}
-			else if($unitType == 'Weight'){
-				$unit = array($unitType, $product->Weight);
-			}
-			return $unit;
+	public function calculateWeightBased($zone) {
+		$totalWeight = 0;
+		foreach($this->items as $item){
+			$product = $item->buyable();
+			$totalWeight += $product->Weight;
 		}
-		else{
-			echo ('Could not find a carrier that ships ' . $product->ClassName);
-			return false;
-		}
-	}
-
-	public static function calculateCharge($zone, $totalQuantity, $totalWeight){
-		$quantityRange = ShippingQuantityRange::get()
-			->where($totalQuantity . ' BETWEEN "MinQuantity" AND "MaxQuantity"');
 		$weightRange = ShippingWeightRange::get()
 			->where($totalWeight . ' BETWEEN "MinWeight" AND "MaxWeight"');
 
-		$quantityRangeID = $quantityRange->first()->ID;
 		$weightRangeID = $weightRange->first()->ID;
-
-		$quantityRate = ShippingRate::get()
-			->leftJoin('InternationalShippingCarrier',
-				'"InternationalShippingCarrier"."ID" = "ShippingRate"."InternationalShippingCarrierID"')
-			->where('"InternationalShippingZoneID" = ' . $zone->ID . '
-				AND "ShippingQuantityRangeID" = ' . $quantityRangeID)
-			->first()->AmountPerUnit;
-
 		$weightRate = ShippingRate::get()
 			->leftJoin('InternationalShippingCarrier',
 				'"InternationalShippingCarrier"."ID" = "ShippingRate"."InternationalShippingCarrierID"')
@@ -131,51 +99,59 @@ class InternationalShippingCarrier extends DataObject{
 				AND "ShippingWeightRangeID" = ' . $weightRangeID)
 			->first()->AmountPerUnit;
 
-		$totalQuantityCharge = $totalQuantity * $quantityRate;
-		$totalWeightCharge = $totalWeight * $weightRate;
-
-		$totalCharge = $totalQuantityCharge + $totalWeightCharge;
-		return $totalCharge;
+		$weightCharge = $totalWeight * $weightRate;
+		return $weightCharge;
 	}
 
-//	public function calculateWeightBased() {
-//
-//		//lookup weight range
-//	}
-//
-//	public function calculateItemBased() {
-//
-//		//lookup item range
-//	}
-//
-//	public function calculate() {
-//		return $this->Type == 'Weight' ? $this->calculateWeightBased() : $this->calculateItemBased();
-//	}
-//
-//	public function addItem($item) {
-//		$this->items[] = $item;
-//		return $this;
-//	}
-//
-//	public static function process($items, $country) {
-//		$shippingZone = InternationalShippingZone::get_shipping_zone($country);
-//		$carriers = InternationalShippingCarrier::get();
-//
-//		//distribute items to carrier which ships it
-//		foreach ($items as $item) {
-//			foreach ($carriers as $carrier) {
-//				if ($carrier->shipsItem($item)) {
-//					$carrier->addItem($item);
-//				}
-//			}
-//		}
-//
-//		//get charge from each carrier
-//		$charge = 0;
-//		foreach ($carriers as $carrier) {
-//			$charge += $carrier->calcluate();
-//		}
-//
-//		return $charge;
-//	}
+	public function calculateQuantityBased($zone) {
+		$totalQuantity = 0;
+		foreach($this->items as $item){
+			$totalQuantity += $item->Quantity;
+		}
+		$quantityRange = ShippingQuantityRange::get()
+			->where($totalQuantity . ' BETWEEN "MinQuantity" AND "MaxQuantity"');
+
+		$quantityRangeID = $quantityRange->first()->ID;
+		$quantityRate = ShippingRate::get()
+			->leftJoin('InternationalShippingCarrier',
+				'"InternationalShippingCarrier"."ID" = "ShippingRate"."InternationalShippingCarrierID"')
+			->where('"InternationalShippingZoneID" = ' . $zone->ID . '
+				AND "ShippingQuantityRangeID" = ' . $quantityRangeID)
+			->first()->AmountPerUnit;
+
+		$quantityCharge = $totalQuantity * $quantityRate;
+		return $quantityCharge;
+	}
+
+	public function calculate($zone) {
+		return $this->UnitType == 'Weight' ? $this->calculateWeightBased($zone) : $this->calculateQuantityBased($zone);
+	}
+
+	public function distributeItem($item){
+		$product = $item->buyable();
+		$productTypeArray = explode(',', $this->SupportedProductType);
+		if(in_array($product->ClassName, $productTypeArray)){
+			array_push($this->items, $item);
+		}
+		return $this;
+	}
+
+	public static function process($items, $country) {
+		$shippingZone = InternationalShippingZone::get_shipping_zone($country);
+		$carriers = InternationalShippingCarrier::get()->toArray();
+
+		//distribute items to carrier which ships it
+		foreach ($items as $item) {
+			foreach ($carriers as $carrier) {
+				$carrier->distributeItem($item);
+			}
+		}
+
+		//get charge from each carrier
+		$charge = 0;
+		foreach ($carriers as $carrier) {
+			$charge += $carrier->calculate($shippingZone);
+		}
+		return $charge;
+	}
 }

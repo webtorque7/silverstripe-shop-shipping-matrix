@@ -10,7 +10,8 @@ class InternationalShippingZone extends DataObject{
 	private static $db = array(
 		'Title' => 'Varchar(100)',
 		'Sort' => 'Int',
-		'ShippingCountries' => 'Text'
+		'ShippingCountries' => 'Text',
+		'DefaultZone' => 'Boolean'
 	);
 
 	private static $belongs_many_many = array(

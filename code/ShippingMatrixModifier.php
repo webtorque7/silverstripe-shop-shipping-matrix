@@ -47,32 +47,10 @@ class ShippingMatrixModifier extends ShippingModifier
 			case "international":
 				$this->IsDomestic = false;
 				$items = $this->Order()->Items();
-
-				//find international shipping zone for the selected country
-				$shippingZone = InternationalShippingZone::get_shipping_zone($deliveryCountry);
-
-				//$charge = InternationalShippingCarrier::process($items, $deliveryCountry);
-				//find the shipping rate of the first carrier that ships the product type in the shipping zone
-				if ($shippingZone) {
-					$totalQuantity = 0;
-					$totalWeight = 0;
-					foreach ($items as $item) {
-						$unit = InternationalShippingCarrier::distributeItems($item);
-						if($unit[0] == 'Quantity'){
-							$totalQuantity += $unit[1];
-						}
-						else if($unit[0] == 'Weight'){
-							$totalWeight += $unit[1];
-						}
-					}
-					$charge = InternationalShippingCarrier::calculateCharge($shippingZone, $totalQuantity, $totalWeight);
-					$shippingCharge = $charge;
-				}
+				$shippingCharge = InternationalShippingCarrier::process($items, $deliveryCountry);
 				break;
 			}
 		}
-		Debug::dump($shippingCharge);
-		exit;
 		$this->Amount = $shippingCharge;
 		$this->write();
 	}
@@ -88,22 +66,5 @@ class ShippingMatrixModifier extends ShippingModifier
 	public function TableTitle() {
 		if ($this->ShippingTitle) return $this->ShippingTitle;
 		else return 'Courier Shipping';
-	}
-
-	public static function get_shipping_countries() {
-		$cache = SS_Cache::factory('Countries', 'Output', array('automatic_serialization' => true));
-
-		if (!($countries = $cache->load('DeliveryCuntries'))) {
-		//check for default zone
-			//if yes, return all countries
-		//else
-			//get zones
-			//get countries for zone
-			//merge and sort
-			$cache->save($countries);
-		}
-		return $countries;
-
-
 	}
 }
