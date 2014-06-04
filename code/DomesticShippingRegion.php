@@ -8,7 +8,7 @@
 
 class DomesticShippingRegion extends DataObject{
 	private static $db = array(
-		'Title' => 'Varchar(100)',
+		'Region' => 'Text',
 		'Sort' => 'Int',
 		'Amount' => 'Currency'
 	);
@@ -18,7 +18,7 @@ class DomesticShippingRegion extends DataObject{
 	);
 
 	private static $summary_fields = array(
-		'Title' => 'Title',
+		'Region' => 'Region',
 		'Amount' => 'Amount'
 	);
 
@@ -26,9 +26,13 @@ class DomesticShippingRegion extends DataObject{
 		$fields = parent::getCMSFields();
 		$fields->removeByName('Sort');
 		$fields->removeByName('DomesticShippingCarriers');
+		$fields->removeByName('Title');
+		$address = new AddressExtension;
+		$region = $address->getRegionList();
+
 		$fields->addFieldsToTab('Root.Main', array(
-			TextField::create('Title', 'Region'),
-			TextField::create('Amount', 'Amount'),
+			DropdownField::create('Region', 'Region', $region),
+			TextField::create('Amount', 'Amount')
 		));
 		return $fields;
 	}

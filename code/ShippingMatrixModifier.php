@@ -6,185 +6,78 @@
  * Time: 13:58
  */
 
-class ShippingMatrixModifier extends ShippingModifier{
+class ShippingMatrixModifier extends ShippingModifier
+{
 	private static $db = array(
-		'IsInternational' => 'Boolean',
-		'IsDomestic' => 'Boolean',
-		'IsPickup' => 'Boolean',
-		'Weight' => 'Decimal',
-		'ShippingMargin' => 'Percentage',
 		'ShippingTitle' => 'Varchar(255)',
-		'ShippingAddition' => 'Text'
+		'IsDomestic' => 'Boolean',
+		'IsPickup' => 'Boolean'
 	);
 
 	private static $has_one = array(
 		'InternationalShippingCarrier' => 'InternationalShippingCarrier'
 	);
 
-	private static $many_many = array(
-		'DomesticShippingExtras' => 'DomesticShippingExtra'
-	);
+	public function populate($data, $order) {
+		$shippingCharge = 0;
+		$deliveryCountry = $data['DeliveryCountry'];
+		$deliveryRegion = $data['DeliveryRegion'];
 
-	private static $default_sort = 'Created';
-
-
-	public function getLocalCharge($totalWeight, $shippingSettings){
-		return $shippingSettings->DomesticLocalCharge ? $shippingSettings->DomesticLocalCharge : 0;
-	}
-
-	public function getDomesticShippingExtra($domesticShippingExtra){
-		$return = false;
-		if(!empty($domesticShippingExtra)){
-			$domesticShippingExtraIDS = array();
-			foreach($domesticShippingExtra as $dose){
-				array_push($domesticShippingExtraIDS, $dose);
-			}
-			$return = DomesticShippingExtra::get()->filter(array('ID' => $domesticShippingExtraIDS));
-		}
-		return $return;
-	}
-
-	public function getCurrentShippingZone($deliveryCountry){
-		$shippingZones = ShippingZone::get();
-		foreach($shippingZones as $shippingZone){
-			$countryArray = explode(",",$shippingZone);
-			if(in_array($deliveryCountry, $countryArray))
-				break;
-		}
-		return $shippingZone;
-	}
-
-	public function getWeightBasedCharge($totalItemsWeight, $deliveryCountry, $internationalShippingCarrier){
-		$shippingZone = $this->getCurrentShippingZone($deliveryCountry);
-		$internationalShippingWeightRangeDO = InternationalShippingWeightRange::get()->filter(array(
-			'MinWeight:LessThanEqual' => $totalItemsWeight,
-			'MaxWeight:GreaterThanEqual' => $totalItemsWeight
-		));
-		$iswrID = array();
-		foreach($internationalShippingWeightRangeDO as $isrwDO){
-			array_push($iswrID, $isrwDO->ID);
-		}
-		$carrierShippingZone = CarrierShippingZone::get()->filter(array(
-			'ShippingZoneID' => $shippingZone->ID,
-			'InternationalShippingCarrierID' => $internationalShippingCarrier,
-			'InternationalShippingWeightRangeID' => $iswrID
-		));
-		$cszDO = $carrierShippingZone->first();
-		if($cszDO){
-			$totalCharge = ($cszDO->PerKGAmount * $totalItemsWeight) + $cszDO->PerItemAmount;
-		}
-		else {
-			$totalCharge = 0;
-		}
-		return $totalCharge;
-	}
-
-	public function getCalculateShippingMargin($totalCharge, $shippingMargin){
-		return ($totalCharge * $shippingMargin);
-	}
-
-	/*
-	 * Determine what Local
-	 * Todo
-	 */
-	public function notLocal($localcity){
-		$shippingSettings = SiteConfig::current_site_config();
-		return (strtolower($localcity) != strtolower($shippingSettings->LocalCity));
-	}
-
-	public function calculatePackageWeight(){}
-
-	public function calculateCharge(){
-		return null;
-	}
-
-	public function populate($data, $order){
-		$shippingSettings = SiteConfig::current_site_config();
-		$currency = $shippingSettings->Currency;
-
-		/*
-		 * For novelty products
-		 */
-		$nonWineProductWeight = 0;
-		foreach ($order->Items() as $item) {
-			if ($item->product()->ClassName != 'WineProduct'){
-				$nonWineProductWeight += $item->product()->Weight;
-			}
-		}
-
-		/*
-		 * For Wine products
-		 */
-		$wineBottles = $order->getNumberOfWines();
-		$bottlesPerCrate = ShippingItemUnit::get()->first()->NumberOfItems;
-		$wineCrates = 0;
-		$totalCharge = 0;
-
-		for($i=0; $i<$wineBottles; $i+=$bottlesPerCrate){
-			$wineCrates++;
-		}
-
-		$shippingOption = $data['ShippingOptions'];
-		if($shippingOption){
-			if($shippingOption == 'domestic' || $shippingOption == 'free-domestic'){
+		if ($shippingOption = $data['ShippingOptions']) {
+			switch ($shippingOption) {
+			case "free-domestic":
 				$this->IsDomestic = true;
-				$region = DomesticShippingRegion::get();
-				$shippingCharge = 0;
-				if($region->count() == 1){
-					if($shippingOption == 'domestic'){
-						$shippingCharge = $region->first()->Amount;
+				break;
+
+			case "domestic":
+				$this->IsDomestic = true;
+				$extraCosts = 0;
+				if ($extras = DomesticShippingExtra::get()) {
+					foreach ($extras as $extra) {
+						$extraCosts += $extra->Amount;
 					}
-					$totalCharge += ($wineCrates * $shippingCharge);
-
-					//add in the charge for non wine based on weight
-					$totalCharge += ($nonWineProductWeight * $shippingCharge);
 				}
-				else if($region->count() > 1){
-					//need to add options for region selection on the delivery form
-					//use the selection and compare with the regionID to find the region selected
+				if ($deliveryRegion) {
+					$region = DomesticShippingRegion::get()->filter('Region', $deliveryRegion)->first();
+					$shippingCharge = $region->Amount + $extraCosts;
 				}
+				//TODO domestic shipping is a flat rate not per quantity or weight for now.
+				break;
 
-				// add in domestic shipping extra costs
-				$this->DomesticShippingExtras()->removeAll();
-				if(isset($data['DomesticShippingExtra'])){
-					$DomesticShippingExtraDOS = $this->getDomesticShippingExtra($data['DomesticShippingExtra']);
-					$separator = ' - ';
-					foreach($DomesticShippingExtraDOS as $DomesticShippingExtraDO){
-						$totalCharge += $DomesticShippingExtraDO->Amount;
-						$this->DomesticShippingExtras()->add($DomesticShippingExtraDO);
-						$this->ShippingTitle .= $separator . $DomesticShippingExtraDO->Title;
-						$separator = ', ';
+			case "international":
+				$this->IsDomestic = false;
+				$items = $this->Order()->Items();
+
+				//find international shipping zone for the selected country
+				$shippingZone = InternationalShippingZone::get_shipping_zone($deliveryCountry);
+
+				//$charge = InternationalShippingCarrier::process($items, $deliveryCountry);
+				//find the shipping rate of the first carrier that ships the product type in the shipping zone
+				if ($shippingZone) {
+					$totalQuantity = 0;
+					$totalWeight = 0;
+					foreach ($items as $item) {
+						$unit = InternationalShippingCarrier::distributeItems($item);
+						if($unit[0] == 'Quantity'){
+							$totalQuantity += $unit[1];
+						}
+						else if($unit[0] == 'Weight'){
+							$totalWeight += $unit[1];
+						}
 					}
-					$this->ShippingTitle = nl2br($this->ShippingTitle);
+					$charge = InternationalShippingCarrier::calculateCharge($shippingZone, $totalQuantity, $totalWeight);
+					$shippingCharge = $charge;
 				}
-
-			}
-			else if($shippingOption == 'international'){
-				$this->IsInternational = true;
-				$international = CarrierShippingZone::get();
-				if($international->count() == 1){
-					$shippingCharge = $international->first()->PerKGAmount;
-					$totalCharge += ($wineCrates * $shippingCharge);
-
-					//add in the charge for non wine based on weight
-					$totalCharge += ($nonWineProductWeight * $shippingCharge);
-				}
-				else if($international->count() > 1){
-
-				}
-			}
-			else if ($shippingOption == 'free'){
-				$this->IsPickup = true;
+				break;
 			}
 		}
-
-		$totalCharge += $this->getCalculateShippingMargin($totalCharge, $shippingSettings->ShippingMargin);
-		$this->Amount = $totalCharge;
+		Debug::dump($shippingCharge);
+		exit;
+		$this->Amount = $shippingCharge;
 		$this->write();
 	}
 
-	public function value($subtotal = null)
-	{
+	public function value($subtotal = null) {
 		return $this->Amount();
 	}
 
@@ -192,12 +85,25 @@ class ShippingMatrixModifier extends ShippingModifier{
 		return $this->Amount() > 0;
 	}
 
-	public function TableTitle()
-	{
-		if ($this->ShippingTitle) {
-			return $this->ShippingTitle;
-		} else {
-			return 'Courier Shipping';
+	public function TableTitle() {
+		if ($this->ShippingTitle) return $this->ShippingTitle;
+		else return 'Courier Shipping';
+	}
+
+	public static function get_shipping_countries() {
+		$cache = SS_Cache::factory('Countries', 'Output', array('automatic_serialization' => true));
+
+		if (!($countries = $cache->load('DeliveryCuntries'))) {
+		//check for default zone
+			//if yes, return all countries
+		//else
+			//get zones
+			//get countries for zone
+			//merge and sort
+			$cache->save($countries);
 		}
+		return $countries;
+
+
 	}
 }

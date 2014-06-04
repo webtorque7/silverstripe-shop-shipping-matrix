@@ -11,20 +11,21 @@ class ShippingWeightRange extends DataObject{
 		'Title' => 'Varchar(100)',
 		'Sort' => 'Int',
 		'MinWeight' => 'Decimal',
-		'MaxWeight' => 'Decimal',
-		'Rate' => 'Currency'
+		'MaxWeight' => 'Decimal'
 	);
 
 	private static $belongs_many_many = array(
-		'InternationalShippingCarriers' => 'InternationalShippingCarrier',
-		'DomesticShippingCarriers' => 'DomesticShippingCarrier'
+		'InternationalShippingCarriers' => 'InternationalShippingCarrier'
+	);
+
+	private static $has_one = array(
+		'ShippingRate' => 'ShippingRate'
 	);
 
 	private static $summary_fields = array(
 		'Title' => 'Title',
 		'MinWeight' => 'Minimum Weight(kg)',
-		'MaxWeight' => 'Maximum Weight(kg)',
-		'Rate' => 'Rate'
+		'MaxWeight' => 'Maximum Weight(kg)'
 	);
 
 	public function getCMSFields(){
@@ -32,10 +33,10 @@ class ShippingWeightRange extends DataObject{
 		$fields->removeByName('Sort');
 		$fields->removeByName('InternationalShippingCarriers');
 		$fields->removeByName('DomesticShippingCarriers');
+		$fields->removeByName('ShippingRateID');
 		$fields->addFieldsToTab('Root.Main',array(
 				TextField::create('MinWeight', 'Minimum Weight(kg)'),
-				TextField::create('MaxWeight', 'Maximum Weight(kg)'),
-				TextField::create('Rate', 'Rate')
+				TextField::create('MaxWeight', 'Maximum Weight(kg)')
 			)
 		);
 		return $fields;

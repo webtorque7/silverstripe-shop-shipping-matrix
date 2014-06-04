@@ -11,20 +11,21 @@ class ShippingQuantityRange extends DataObject{
 		'Title' => 'Varchar(100)',
 		'Sort' => 'Int',
 		'MinQuantity' => 'Int',
-		'MaxQuantity' => 'Int',
-		'Rate' => 'Currency'
+		'MaxQuantity' => 'Int'
 	);
 
 	private static $belongs_many_many = array(
-		'InternationalShippingCarriers' => 'InternationalShippingCarrier',
-		'DomesticShippingCarriers' => 'DomesticShippingCarrier'
+		'InternationalShippingCarriers' => 'InternationalShippingCarrier'
+	);
+
+	private static $has_one = array(
+		'ShippingRate' => 'ShippingRate'
 	);
 
 	private static $summary_fields = array(
 		'Title' => 'Title',
 		'MinQuantity' => 'Minimum Quantity',
-		'MaxQuantity' => 'Maximum Quantity',
-		'Rate' => 'Rate'
+		'MaxQuantity' => 'Maximum Quantity'
 	);
 
 	public function getCMSFields(){
@@ -32,10 +33,10 @@ class ShippingQuantityRange extends DataObject{
 		$fields->removeByName('Sort');
 		$fields->removeByName('InternationalShippingCarriers');
 		$fields->removeByName('DomesticShippingCarriers');
+		$fields->removeByName('ShippingRateID');
 		$fields->addFieldsToTab('Root.Main',array(
 				TextField::create('MinQuantity', 'Minimum Quantity'),
-				TextField::create('MaxQuantity', 'Maximum Quantity'),
-				TextField::create('Rate', 'Rate')
+				TextField::create('MaxQuantity', 'Maximum Quantity')
 			)
 		);
 		return $fields;

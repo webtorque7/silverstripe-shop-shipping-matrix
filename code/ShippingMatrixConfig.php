@@ -41,23 +41,23 @@ class ShippingMatrixConfig extends DataExtension{
 					DomesticShippingCarrier::get(),
 					GridFieldConfig_RecordEditor::create()->addComponent(GridFieldOrderableRows::create('Sort'))
 				)
-			),
-			$regionsAndZones = new Tab("RegionsAndZones",
-				DropdownField::create("DomesticCountry",_t('Address.COUNTRY','Dometstic Country'), $countries, 'NZ'),
-				GridField::create(
-					'DomesticShippingRegion',
-					'Domestic Shipping Region',
-					DomesticShippingRegion::get(),
-					GridFieldConfig_RecordEditor::create()->addComponent(GridFieldOrderableRows::create('Sort'))
-				),
-				GridField::create(
-					'InternationalShippingZone',
-					'International Shipping Zone',
-					InternationalShippingZone::get(),
-					GridFieldConfig_RecordEditor::create()->addComponent(GridFieldOrderableRows::create('Sort'))
-				)
-
 			)
+//			$regionsAndZones = new Tab("RegionsAndZones",
+//				DropdownField::create("DomesticCountry",_t('Address.COUNTRY','Dometstic Country'), $countries, 'NZ'),
+//				GridField::create(
+//					'DomesticShippingRegion',
+//					'Domestic Shipping Region',
+//					DomesticShippingRegion::get(),
+//					GridFieldConfig_RecordEditor::create()->addComponent(GridFieldOrderableRows::create('Sort'))
+//				),
+//				GridField::create(
+//					'InternationalShippingZone',
+//					'International Shipping Zone',
+//					InternationalShippingZone::get(),
+//					GridFieldConfig_RecordEditor::create()->addComponent(GridFieldOrderableRows::create('Sort'))
+//				)
+//
+//			)
 		);
 		$fields->addFieldToTab('Root.Shop.ShopTabs.ShippingMatrix', $shippingTab);
 	}
