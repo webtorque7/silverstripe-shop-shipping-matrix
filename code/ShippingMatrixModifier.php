@@ -48,9 +48,12 @@ class ShippingMatrixModifier extends ShippingModifier
 				$this->IsDomestic = false;
 				$items = $this->Order()->Items();
 				$shippingCharge = InternationalShippingCarrier::process($items, $deliveryCountry);
+
+				Debug::dump($shippingCharge);exit;
 				break;
 			}
 		}
+		exit;
 		$this->Amount = $shippingCharge;
 		$this->write();
 	}
@@ -66,5 +69,28 @@ class ShippingMatrixModifier extends ShippingModifier
 	public function TableTitle() {
 		if ($this->ShippingTitle) return $this->ShippingTitle;
 		else return 'Courier Shipping';
+	}
+
+	public static function get_shipping_countries() {
+		$cache = SS_Cache::factory('Countries', 'Output', array('automatic_serialization' => true));
+
+		if (!($countries = $cache->load('deliveryCountry'))) {
+			$defultZone = InternationalShippingZone::get()->filter('DefaultZone', true)->first();
+			if(!empty($defultZone)){
+				$countries = ShopConfig::$iso_3166_countryCodes;
+			}
+			else{
+				$countries = array();
+				$zones = InternationalShippingZone::get();
+				foreach($zones as $zone){
+					array_push($countries, $zone->ShippingCountries);
+				}
+				asort($countries);
+			}
+			$cache->save($countries);
+		}
+		return $countries;
+
+
 	}
 }
