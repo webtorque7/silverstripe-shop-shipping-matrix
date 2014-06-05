@@ -51,6 +51,7 @@ class ShippingMatrixModifier extends ShippingModifier
 				break;
 			}
 		}
+//		Debug::dump($shippingCharge);exit;
 		$this->Amount = $shippingCharge;
 		$this->write();
 	}
@@ -65,7 +66,7 @@ class ShippingMatrixModifier extends ShippingModifier
 
 	public function TableTitle() {
 		if ($this->ShippingTitle) return $this->ShippingTitle;
-		else return 'Courier Shipping';
+		else return 'Shipping';
 	}
 
 	public static function get_shipping_countries() {
