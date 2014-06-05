@@ -88,26 +88,29 @@ class InternationalShippingCarrier extends DataObject{
 			$product = $item->buyable();
 			$totalWeight += $product->Weight * $item->Quantity;
 		}
-		$weightRange = ShippingWeightRange::get()
-			->where($totalWeight . ' BETWEEN "MinWeight" AND "MaxWeight"');
+		if($totalWeight > 0){
+			$weightRange = ShippingWeightRange::get()
+				->where($totalWeight . ' BETWEEN "MinWeight" AND "MaxWeight"');
 
-		$weightRangeID = $weightRange->first()->ID;
-		$weightRate = ShippingRate::get()
-			->leftJoin('InternationalShippingCarrier',
-				'"InternationalShippingCarrier"."ID" = "ShippingRate"."InternationalShippingCarrierID"')
-			->where('"InternationalShippingZoneID" = ' . $zone->ID . '
+			$weightRangeID = $weightRange->first()->ID;
+			$weightRate = ShippingRate::get()
+				->leftJoin('InternationalShippingCarrier',
+					'"InternationalShippingCarrier"."ID" = "ShippingRate"."InternationalShippingCarrierID"')
+				->where('"InternationalShippingZoneID" = ' . $zone->ID . '
 				AND "ShippingWeightRangeID" = ' . $weightRangeID)
-			->first();
+				->first();
 
-		if(!empty($weightRate)){
-			$rate = $weightRate->AmountPerUnit;
-			$weightCharge = $totalWeight * $rate;
-		}
-		else{
-			user_error('The total weight of the items exceeds the maximum weight of our couriers,
+			if(!empty($weightRate)){
+				$rate = $weightRate->AmountPerUnit;
+				$weightCharge = $totalWeight * $rate;
+			}
+			else{
+				user_error('The total weight of the items exceeds the maximum weight of our couriers,
 				please contact us to arrange other shipping methods.');
+			}
+			return $weightCharge;
 		}
-		return $weightCharge;
+		return 0;
 	}
 
 	public function calculateQuantityBased($zone) {
@@ -115,26 +118,29 @@ class InternationalShippingCarrier extends DataObject{
 		foreach($this->items as $item){
 			$totalQuantity += $item->Quantity;
 		}
-		$quantityRange = ShippingQuantityRange::get()
-			->where($totalQuantity . ' BETWEEN "MinQuantity" AND "MaxQuantity"');
+		if($totalQuantity > 0){
+			$quantityRange = ShippingQuantityRange::get()
+				->where($totalQuantity . ' BETWEEN "MinQuantity" AND "MaxQuantity"');
 
-		$quantityRangeID = $quantityRange->first()->ID;
-		$quantityRate = ShippingRate::get()
-			->leftJoin('InternationalShippingCarrier',
-				'"InternationalShippingCarrier"."ID" = "ShippingRate"."InternationalShippingCarrierID"')
-			->where('"InternationalShippingZoneID" = ' . $zone->ID . '
-				AND "ShippingQuantityRangeID" = ' . $quantityRangeID)
-			->first()->AmountPerUnit;
+			$quantityRangeID = $quantityRange->first()->ID;
+			$quantityRate = ShippingRate::get()
+				->leftJoin('InternationalShippingCarrier',
+					'"InternationalShippingCarrier"."ID" = "ShippingRate"."InternationalShippingCarrierID"')
+				->where('"InternationalShippingZoneID" = ' . $zone->ID . '
+					AND "ShippingQuantityRangeID" = ' . $quantityRangeID)
+				->first()->AmountPerUnit;
 
-		if(!empty($quantityRate)){
-			$rate = $quantityRate->AmountPerUnit;
-			$quantityCharge = $totalQuantity * $rate;
+			if(!empty($quantityRate)){
+				$rate = $quantityRate->AmountPerUnit;
+				$quantityCharge = $totalQuantity * $rate;
+			}
+			else{
+				user_error('The total quantity of the items exceeds the maximum quantity of our couriers,
+					please contact us to explore other shipping methods.');
+			}
+			return $quantityCharge;
 		}
-		else{
-			user_error('The total quantity of the items exceeds the maximum quantity of our couriers,
-				please contact us to explore other shipping methods.');
-		}
-		return $quantityCharge;
+		return 0;
 	}
 
 	public function calculate($zone) {

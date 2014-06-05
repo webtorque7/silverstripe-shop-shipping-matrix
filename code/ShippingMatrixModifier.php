@@ -48,12 +48,9 @@ class ShippingMatrixModifier extends ShippingModifier
 				$this->IsDomestic = false;
 				$items = $this->Order()->Items();
 				$shippingCharge = InternationalShippingCarrier::process($items, $deliveryCountry);
-
-				Debug::dump($shippingCharge);exit;
 				break;
 			}
 		}
-		exit;
 		$this->Amount = $shippingCharge;
 		$this->write();
 	}
