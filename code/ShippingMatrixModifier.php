@@ -51,7 +51,6 @@ class ShippingMatrixModifier extends ShippingModifier
 				break;
 			}
 		}
-//		Debug::dump($shippingCharge);exit;
 		$this->Amount = $shippingCharge;
 		$this->write();
 	}

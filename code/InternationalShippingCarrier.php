@@ -11,7 +11,9 @@ class InternationalShippingCarrier extends DataObject{
 		'Title' => 'Varchar(100)',
 		'Sort' => 'Int',
 		'UnitType' => 'Varchar',
-		'SupportedProductType' => 'Varchar'
+		'SupportedProductType' => 'Varchar',
+		'TrackingURL' => 'Varchar',
+		'TrackerType' => 'Varchar'
 	);
 
 	private static $belongs_to = array(
@@ -37,9 +39,14 @@ class InternationalShippingCarrier extends DataObject{
 		$types = array_combine($subClasses, $subClasses);
 		unset($types['Product']);
 
+		$trackerClasses = ClassInfo::subclassesFor('TrackingLinkGenerator');
+		$trackers = array_combine($trackerClasses, $trackerClasses);
+
 		$fields->addFieldsToTab('Root.Main', array(
 			OptionsetField::create('UnitType', 'Unit Type', array('Weight' => 'Weight', 'Quantity' => 'Quantity')),
-			CheckboxSetField::create('SupportedProductType', 'Supported Product Types', $types)
+			CheckboxSetField::create('SupportedProductType', 'Supported Product Types', $types),
+			TextField::create('TrackingURL', 'Tracking URL'),
+			DropdownField::create('TrackerType', 'Tracker Type', $trackers)
 		));
 		$fields->removeByName('Sort');
 		$fields->removeByName('InternationalShippingZones');
@@ -79,7 +86,12 @@ class InternationalShippingCarrier extends DataObject{
 				->addComponent(GridFieldOrderableRows::create('Sort')));
 
 		$fields->addFieldToTab('Root.QuantityRanges', $quantityRangeGrid);
+		$fields->removeByName('TrackingLinkGeneratorID');
 		return $fields;
+	}
+
+	public function getTrackingLink($order){
+		return singleton($this->TrackerType)->getTrackingLink($this->TrackingURL, $order);
 	}
 
 	public function calculateWeightBased($zone) {
@@ -90,25 +102,44 @@ class InternationalShippingCarrier extends DataObject{
 		}
 		if($totalWeight > 0){
 			$weightRange = ShippingWeightRange::get()
-				->where($totalWeight . ' BETWEEN "MinWeight" AND "MaxWeight"');
+				->where($totalWeight . ' BETWEEN "MinWeight" AND "MaxWeight"')
+				->first();
 
-			$weightRangeID = $weightRange->first()->ID;
+			$weightRate = '';
+
+			if(!empty($weightRange)){
 			$weightRate = ShippingRate::get()
 				->leftJoin('InternationalShippingCarrier',
 					'"InternationalShippingCarrier"."ID" = "ShippingRate"."InternationalShippingCarrierID"')
 				->where('"InternationalShippingZoneID" = ' . $zone->ID . '
-				AND "ShippingWeightRangeID" = ' . $weightRangeID)
+				AND "ShippingWeightRangeID" = ' . $weightRange->ID)
 				->first();
+			}
 
 			if(!empty($weightRate)){
 				$rate = $weightRate->AmountPerUnit;
 				$weightCharge = $totalWeight * $rate;
+
+				//save used carriers to session so it's tracking url can be used later
+				$carrier = $weightRate->InternationalShippingCarrier();
+				if ($carriers = Session::get('UsedCarriers')) {
+					if(!in_array($carrier->ID, $carriers, true)){
+						array_push($carriers, $carrier->ID);
+						Session::set('UsedCarriers', $carriers);
+					}
+				}
+				else{
+					$carriers = array();
+					array_push($carriers, $carrier->ID);
+					Session::set('UsedCarriers', $carriers);
+				}
+
+				return $weightCharge;
 			}
 			else{
 				user_error('The total weight of the items exceeds the maximum weight of our couriers,
 				please contact us to arrange other shipping methods.');
 			}
-			return $weightCharge;
 		}
 		return 0;
 	}
@@ -120,25 +151,44 @@ class InternationalShippingCarrier extends DataObject{
 		}
 		if($totalQuantity > 0){
 			$quantityRange = ShippingQuantityRange::get()
-				->where($totalQuantity . ' BETWEEN "MinQuantity" AND "MaxQuantity"');
+				->where($totalQuantity . ' BETWEEN "MinQuantity" AND "MaxQuantity"')
+				->first();
 
-			$quantityRangeID = $quantityRange->first()->ID;
-			$quantityRate = ShippingRate::get()
-				->leftJoin('InternationalShippingCarrier',
-					'"InternationalShippingCarrier"."ID" = "ShippingRate"."InternationalShippingCarrierID"')
-				->where('"InternationalShippingZoneID" = ' . $zone->ID . '
-					AND "ShippingQuantityRangeID" = ' . $quantityRangeID)
-				->first()->AmountPerUnit;
+			$quantityRate = '';
+
+			if(!empty($quantityRange)){
+				$quantityRate = ShippingRate::get()
+					->leftJoin('InternationalShippingCarrier',
+						'"InternationalShippingCarrier"."ID" = "ShippingRate"."InternationalShippingCarrierID"')
+					->where('"InternationalShippingZoneID" = ' . $zone->ID . '
+					AND "ShippingQuantityRangeID" = ' . $quantityRange->ID)
+					->first();
+			}
 
 			if(!empty($quantityRate)){
 				$rate = $quantityRate->AmountPerUnit;
 				$quantityCharge = $totalQuantity * $rate;
+
+				//save used carriers to session so it's tracking url can be used later
+				$carrier = $quantityRate->InternationalShippingCarrier();
+				if ($carriers = Session::get('UsedCarriers')) {
+					if(!in_array($carrier->ID, $carriers, true)){
+						array_push($carriers, $carrier->ID);
+						Session::set('UsedCarriers', $carriers);
+					}
+				}
+				else{
+					$carriers = array();
+					array_push($carriers, $carrier->ID);
+					Session::set('UsedCarriers', $carriers);
+				}
+
+				return $quantityCharge;
 			}
 			else{
 				user_error('The total quantity of the items exceeds the maximum quantity of our couriers,
 					please contact us to explore other shipping methods.');
 			}
-			return $quantityCharge;
 		}
 		return 0;
 	}

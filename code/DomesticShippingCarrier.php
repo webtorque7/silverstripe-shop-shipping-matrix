@@ -9,7 +9,8 @@
 class DomesticShippingCarrier extends DataObject{
 	private static $db = array(
 		'Title' => 'Varchar(100)',
-		'Sort' => 'Int'
+		'Sort' => 'Int',
+		'TrackingURL' => 'Varchar'
 	);
 
 	private static $belongs_to = array(
@@ -19,6 +20,10 @@ class DomesticShippingCarrier extends DataObject{
 	private static $many_many = array(
 		'DomesticShippingRegions' => 'DomesticShippingRegion',
 		'DomesticShippingExtras' => 'DomesticShippingExtra'
+	);
+
+	private static $has_one = array(
+		'TrackingLinkGenerator' => 'TrackingLinkGenerator'
 	);
 
 	public function getCMSFields(){
@@ -41,7 +46,14 @@ class DomesticShippingCarrier extends DataObject{
 			GridFieldConfig_RelationEditor::create()
 				->addComponent(GridFieldOrderableRows::create('Sort')));
 
-		$fields->addFieldsToTab('Root.Main', array($shippingRegionGrid, $shippingExtraGrid));
+		$fields->addFieldsToTab('Root.Main', array(
+			TextField::create('TrackingURL', 'Tracking URL'),
+			$shippingRegionGrid,
+			$shippingExtraGrid));
 		return $fields;
+	}
+
+	public function getTrackingLink($order){
+		return $this->TrackingLinkGenerator($this->TrackingURL, $order);
 	}
 }
