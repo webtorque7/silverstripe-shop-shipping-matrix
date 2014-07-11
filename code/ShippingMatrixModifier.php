@@ -11,14 +11,15 @@ class ShippingMatrixModifier extends ShippingModifier
 	private static $db = array(
 		'ShippingTitle' => 'Varchar(255)',
 		'IsDomestic' => 'Boolean',
-		'IsPickup' => 'Boolean'
+		'IsPickup' => 'Boolean',
+		'Amount' => 'Varchar'
 	);
 
 	private static $has_one = array(
 		'InternationalShippingCarrier' => 'InternationalShippingCarrier'
 	);
 
-	public function populate($data, $order) {
+	public function populate($data) {
 		$shippingCharge = 0;
 		$deliveryCountry = $data['DeliveryCountry'];
 		$deliveryRegion = $data['DeliveryRegion'];
