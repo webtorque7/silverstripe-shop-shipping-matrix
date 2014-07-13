@@ -12,7 +12,7 @@ class ShippingMatrixModifier extends ShippingModifier
 		'ShippingTitle' => 'Varchar(255)',
 		'IsDomestic' => 'Boolean',
 		'IsPickup' => 'Boolean',
-		'Amount' => 'Varchar'
+		'Amount' => 'Double'
 	);
 
 	private static $has_one = array(
@@ -90,5 +90,12 @@ class ShippingMatrixModifier extends ShippingModifier
 		return $countries;
 
 
+	}
+
+	public function Order() {
+		if (!$this->OrderID) {
+			return ShoppingCart::curr();
+		}
+		return $this->getComponent('Order');
 	}
 }
