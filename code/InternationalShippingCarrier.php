@@ -91,7 +91,7 @@ class InternationalShippingCarrier extends DataObject{
 	}
 
 	public function getTrackingLink($order){
-		return singleton($this->TrackerType)->getTrackingLink($this->TrackingURL, $order);
+		return $this->TrackerType ? singleton($this->TrackerType)->getTrackingLink($this->TrackingURL, $order) : false;
 	}
 
 	public function calculateWeightBased($zone) {
@@ -117,8 +117,8 @@ class InternationalShippingCarrier extends DataObject{
 			}
 
 			if(!empty($weightRate)){
-				$rate = $weightRate->AmountPerUnit;
-				$weightCharge = $totalWeight * $rate;
+				$rate = $weightRate->ShippingCharge;
+				$totalCharge = $totalWeight * $rate;
 
 				//save used carriers to session so it's tracking url can be used later
 				$carrier = $weightRate->InternationalShippingCarrier();
@@ -134,7 +134,7 @@ class InternationalShippingCarrier extends DataObject{
 					Session::set('UsedCarriers', $carriers);
 				}
 
-				return $weightCharge;
+				return $totalCharge;
 			}
 			else{
 				user_error('The total weight of the items exceeds the maximum weight of our couriers,
@@ -166,8 +166,7 @@ class InternationalShippingCarrier extends DataObject{
 			}
 
 			if(!empty($quantityRate)){
-				$rate = $quantityRate->AmountPerUnit;
-				$quantityCharge = $totalQuantity * $rate;
+				$totalCharge = $quantityRate->ShippingCharge;
 
 				//save used carriers to session so it's tracking url can be used later
 				$carrier = $quantityRate->InternationalShippingCarrier();
@@ -183,7 +182,7 @@ class InternationalShippingCarrier extends DataObject{
 					Session::set('UsedCarriers', $carriers);
 				}
 
-				return $quantityCharge;
+				return $totalCharge;
 			}
 			else{
 				user_error('The total quantity of the items exceeds the maximum quantity of our couriers,

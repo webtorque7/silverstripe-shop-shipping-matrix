@@ -9,64 +9,42 @@
 class ShippingMatrixModifier extends ShippingModifier
 {
 	private static $db = array(
-		'ShippingTitle' => 'Varchar(255)',
-		'IsDomestic' => 'Boolean',
-		'IsPickup' => 'Boolean',
-		'Amount' => 'Double'
-	);
-
-	private static $has_one = array(
-		'InternationalShippingCarrier' => 'InternationalShippingCarrier'
+		'ShippingType' => 'Enum("domestic,international,pickup,free","domestic")',
+		'DefaultCountry' => 'Varchar(10)'
 	);
 
 	public function populate($data) {
 		$shippingCharge = 0;
 		$deliveryCountry = $data['DeliveryCountry'];
-		$deliveryRegion = $data['DeliveryRegion'];
-
 		if ($shippingOption = $data['ShippingOptions']) {
 			switch ($shippingOption) {
-			case "free-domestic":
-				$this->IsDomestic = true;
-				break;
-
 			case "domestic":
-				$this->IsDomestic = true;
-				$extraCosts = 0;
-				if ($extras = DomesticShippingExtra::get()) {
-					foreach ($extras as $extra) {
-						$extraCosts += $extra->Amount;
-					}
+				if ($deliveryRegion = $data['DeliveryRegion']) {
+					$shippingCharge = DomesticShippingCarrier::process($deliveryRegion);
 				}
-				if ($deliveryRegion) {
-					$region = DomesticShippingRegion::get()->filter('Region', $deliveryRegion)->first();
-					$shippingCharge = $region->Amount + $extraCosts;
-				}
-				//TODO domestic shipping is a flat rate not per quantity or weight for now.
 				break;
-
 			case "international":
-				$this->IsDomestic = false;
 				$items = $this->Order()->Items();
 				$shippingCharge = InternationalShippingCarrier::process($items, $deliveryCountry);
 				break;
 			}
 		}
+		$this->DefaultCountry = $deliveryCountry;
+		$this->ShippingType = $shippingOption;
 		$this->Amount = $shippingCharge;
 		$this->write();
+	}
+
+	public function ShowInTable() {
+		return true;
 	}
 
 	public function value($subtotal = null) {
 		return $this->Amount();
 	}
 
-	public function ShowInTable() {
-		return $this->Amount() > 0;
-	}
-
 	public function TableTitle() {
-		if ($this->ShippingTitle) return $this->ShippingTitle;
-		else return 'Shipping';
+		return 'Shipping (' . $this->ShippingType . ')';
 	}
 
 	public static function get_shipping_countries() {
@@ -88,8 +66,6 @@ class ShippingMatrixModifier extends ShippingModifier
 			$cache->save($countries);
 		}
 		return $countries;
-
-
 	}
 
 	public function Order() {
