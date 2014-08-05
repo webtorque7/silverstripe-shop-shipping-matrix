@@ -27,6 +27,10 @@ class ShippingRate extends DataObject{
 		'InternationalShippingZone.Title' => 'Shipping Zone'
 	);
 
+	public function canView($member = null) {
+		return true;
+	}
+
 	public function getCMSFields(){
 		$fields = parent::getCMSFields();
 		$fields->addFieldsToTab('Root.Main', array(

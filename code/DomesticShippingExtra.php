@@ -22,6 +22,10 @@ class DomesticShippingExtra extends DataObject{
 		'Amount' => 'Amount'
 	);
 
+	public function canView($member = null) {
+		return true;
+	}
+
 	public function getCMSFields(){
 		$fields = parent::getCMSFields();
 		$fields->removeByName('Sort');

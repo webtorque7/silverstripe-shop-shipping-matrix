@@ -32,6 +32,10 @@ class InternationalShippingCarrier extends DataObject{
 
 	protected $items = array();
 
+	public function canView($member = null) {
+		return true;
+	}
+
 	public function getCMSFields(){
 		$fields = parent::getCMSFields();
 

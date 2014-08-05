@@ -23,6 +23,10 @@ class DomesticShippingCarrier extends DataObject{
 		'DomesticShippingExtras' => 'DomesticShippingExtra'
 	);
 
+	public function canView($member = null) {
+		return true;
+	}
+
 	public function getCMSFields(){
 		$fields = parent::getCMSFields();
 		$fields->removeByName('Sort');

@@ -25,7 +25,9 @@ class InternationalShippingZone extends DataObject{
 	private static $summary_fields = array(
 		'Title' => 'Title'
 	);
-
+	public function canView($member = null) {
+		return true;
+	}
 	public function getCMSFields(){
 		$fields = parent::getCMSFields();
 		$fields->removeByName('Sort');
