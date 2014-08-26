@@ -44,7 +44,8 @@ class ShippingMatrixModifier extends ShippingModifier
 	}
 
 	public function TableTitle() {
-		return 'Shipping (' . $this->ShippingType . ')';
+//		return 'Shipping (' . $this->ShippingType . ')';
+		return 'Shipping';
 	}
 
 	public static function get_shipping_countries() {
