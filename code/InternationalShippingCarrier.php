@@ -60,7 +60,7 @@ class InternationalShippingCarrier extends DataObject{
 
 		$ZoneRangeGrid = GridField::create(
 			'ShippingRates',
-			'Shipping Shipping Rates',
+			'Shipping Rates',
 			$this->ShippingRates(),
 			GridFieldConfig_RelationEditor::create()
 				->addComponent(GridFieldOrderableRows::create('Sort')));

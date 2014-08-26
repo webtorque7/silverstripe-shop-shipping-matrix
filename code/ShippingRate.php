@@ -22,9 +22,10 @@ class ShippingRate extends DataObject{
 
 	private static $summary_fields = array(
 		'InternationalShippingCarrier.Title' => 'International Shipping Carrier',
+		'InternationalShippingZone.Title' => 'Shipping Zone',
 		'ShippingWeightRange.Title' => 'Weight Range',
 		'ShippingQuantityRange.Title' => 'Quantity Range',
-		'InternationalShippingZone.Title' => 'Shipping Zone'
+		'ShippingCharge' => 'Shipping Charge'
 	);
 
 	public function canView($member = null) {
