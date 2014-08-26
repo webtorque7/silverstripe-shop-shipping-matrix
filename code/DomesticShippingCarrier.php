@@ -62,30 +62,26 @@ class DomesticShippingCarrier extends DataObject{
 		return $this->TrackerType ? singleton($this->TrackerType)->getTrackingLink($this->TrackingURL, $order) : false;
 	}
 
-	public static function process($region) {
-		//find the carrier that ships in the region
-		$carrier = DomesticShippingCarrier::get()
-			->leftJoin('DomesticShippingCarrier_DomesticShippingRegions',
-				'"DomesticShippingCarrier"."ID" = "DomesticShippingCarrier_DomesticShippingRegions"."DomesticShippingCarrierID"')
-			->leftJoin('DomesticShippingRegion',
-				'"DomesticShippingRegion"."ID" = "DomesticShippingCarrier_DomesticShippingRegions"."DomesticShippingRegionID"')
-			->where('"DomesticShippingRegion"."Region" = \'' . $region . '\'')
-			->first();
+	public function Regions(){
+		return $this->DomesticShippingRegions();
+	}
 
-		//find the region charge
-		$regionCharge = 0;
-		foreach($carrier->DomesticShippingRegions() as $shippingRegion){
-			if ($shippingRegion == $region){
-				$regionCharge = $shippingRegion->Amount;
+	public static function process($region = null) {
+		//find the carrier that ships in the region
+		if(!isset($region)){
+			$region = 'AUK';
+		}
+		$regionObject = DomesticShippingRegion::get()->filter(array('Region' => $region))->first();
+
+		if($regionObject){
+			$charge = $regionObject->Amount;
+			$carrier = $regionObject->DomesticShippingCarriers()->first();
+			if($carrier){
+				foreach($carrier->DomesticShippingExtras() as $shippingExtra){
+					$charge += $shippingExtra->Amount;
+				}
+				return $charge;
 			}
 		}
-
-		//add up the extra charges from this carrier
-		$extraCharge = 0;
-		foreach($carrier->DomesticShippingExtras() as $shippingExtra){
-			$extraCharge += $shippingExtra->Amount;
-		}
-
-		return $regionCharge + $extraCharge;
 	}
 }
