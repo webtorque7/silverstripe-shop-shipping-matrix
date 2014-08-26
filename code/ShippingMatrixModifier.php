@@ -54,7 +54,7 @@ class ShippingMatrixModifier extends ShippingModifier
 		if (!($countries = $cache->load('deliveryCountry'))) {
 			$defultZone = InternationalShippingZone::get()->filter('DefaultZone', true)->first();
 			if(!empty($defultZone)){
-				$countries = ShopConfig::$iso_3166_countryCodes;
+				SiteConfig::current_site_config()->getCountriesList();
 			}
 			else{
 				$countries = array();

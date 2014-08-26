@@ -37,7 +37,7 @@ class InternationalShippingZone extends DataObject{
 			new CheckboxSetField(
 				'ShippingCountries',
 				'Shipping Countries',
-				ShopConfig::$iso_3166_countryCodes));
+				SiteConfig::current_site_config()->getCountriesList()));
 		return $fields;
 	}
 
