@@ -161,15 +161,16 @@ class InternationalShippingCarrier extends DataObject{
 				->first();
 
 			if($quantityRange){
-				$rates = ShippingRate::get()->filter(array('ShippingQuantityRangeID' => $quantityRange->ID, 'InternationalShippingZoneID' => $zone->ID))->first();
-
 				$carrier = '';
+				$rates = ShippingRate::get()->filter(array('ShippingQuantityRangeID' => $quantityRange->ID, 'InternationalShippingZoneID' => $zone->ID));
 
-				foreach($rates as $rate){
-					if($rate->InternationalShippingCarrier()){
-						$carrier = $rate->InternationalShippingCarrier();
-						$charge = $rate->ShippingCharge;
-						break;
+				if($rates){
+					foreach($rates as $rate){
+						if($rate->InternationalShippingCarrier()){
+							$carrier = $rate->InternationalShippingCarrier();
+							$charge = $rate->ShippingCharge;
+							break;
+						}
 					}
 				}
 
