@@ -15,7 +15,7 @@ class ShippingMatrixModifier extends ShippingModifier
 
 	public function populate($data) {
 		$shippingCharge = 0;
-		$deliveryCountry = $data['DeliveryCountry'];
+		$deliveryCountry = $data['ShippingCountry'];
 		if ($shippingOption = $data['ShippingOptions']) {
 			switch ($shippingOption) {
 			case "domestic":
