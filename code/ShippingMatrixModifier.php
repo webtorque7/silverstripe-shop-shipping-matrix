@@ -15,8 +15,12 @@ class ShippingMatrixModifier extends ShippingModifier
 
 	public function populate($data) {
 		$shippingCharge = 0;
-		$deliveryCountry = $data['DeliveryCountry'];
+		if ($deliveryCountry = $data['DeliveryCountry']){
+			$this->DefaultCountry = $deliveryCountry;
+		}
 		if ($shippingOption = $data['ShippingOptions']) {
+			$this->ShippingType = $shippingOption;
+
 			switch ($shippingOption) {
 			case "domestic":
 				$shippingCharge = DomesticShippingCarrier::process($data['DeliveryRegion']);
@@ -26,9 +30,8 @@ class ShippingMatrixModifier extends ShippingModifier
 				$shippingCharge = InternationalShippingCarrier::process($items, $deliveryCountry);
 				break;
 			}
+
 		}
-		$this->DefaultCountry = $deliveryCountry;
-		$this->ShippingType = $shippingOption;
 		$this->Amount = $shippingCharge;
 		$this->write();
 	}
