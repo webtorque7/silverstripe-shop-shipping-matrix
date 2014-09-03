@@ -80,6 +80,20 @@ class DomesticShippingCarrier extends DataObject{
 				foreach($carrier->DomesticShippingExtras() as $shippingExtra){
 					$charge += $shippingExtra->Amount;
 				}
+
+				//save used carriers to session so it's tracking url can be used later
+				if ($carriers = Session::get('UsedCarriers')) {
+					if(!in_array($carrier->ID, $carriers, true)){
+						array_push($carriers, $carrier->ID);
+						Session::set('UsedCarriers', $carriers);
+					}
+				}
+				else{
+					$carriers = array();
+					array_push($carriers, $carrier->ID);
+					Session::set('UsedCarriers', $carriers);
+				}
+
 				return $charge;
 			}
 		}
