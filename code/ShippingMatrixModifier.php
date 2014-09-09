@@ -23,14 +23,13 @@ class ShippingMatrixModifier extends ShippingModifier
 
 			switch ($shippingOption) {
 			case "domestic":
-				$shippingCharge = DomesticShippingCarrier::process($data['DeliveryRegion']);
+				$shippingCharge = DomesticShippingCarrier::process();
 				break;
 			case "international":
 				$items = $this->Order()->Items();
 				$shippingCharge = InternationalShippingCarrier::process($items, $deliveryCountry);
 				break;
 			}
-
 		}
 		$this->Amount = $shippingCharge;
 		$this->write();
