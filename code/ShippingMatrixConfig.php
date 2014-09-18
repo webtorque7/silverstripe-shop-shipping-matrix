@@ -19,23 +19,23 @@ class ShippingMatrixConfig extends DataExtension{
 		//shipping option text
 		'FreeShippingText' => 'Varchar(200)',
 		'DomesticShippingText' => 'Varchar(200)',
-		'InternationalShippingText' => 'Varchar(200)',
+		'InternationalShippingText' => 'HTMLText',
 		'PickupText' => 'Varchar(200)',
 	);
 
 	public function updateCMSFields(FieldList $fields) {
 		$countries = SiteConfig::current_site_config()->getCountriesList();
 		$fields->addFieldToTab('Root.Shop.ShopTabs.Main',
-			DropdownField::create("DomesticCountry",_t('Address.COUNTRY','Dometstic Country'), $countries, 'NZ')
+			DropdownField::create("DomesticCountry",_t('Address.COUNTRY','Domestic Country'), $countries, 'NZ')
 		);
 		$shippingTab = new TabSet("ShippingTabs",
 			$main = new Tab("Main",
 				TextField::create('FreeShippingQuantity', 'Free Shipping Quantity'),
 				TextField::create('FreeShippingText', 'Free Shipping Text'),
 				TextField::create('DomesticShippingText', 'Domestic Shipping Text'),
-				TextField::create('InternationalShippingText', 'International Shipping Text'),
 				TextField::create('PickupText', 'Pickup Text'),
-				CheckboxField::create('AllowPickup', 'Allow Pickup'),
+                                HtmlEditorField::create('InternationalShippingText', 'International Shipping Text'),
+                                CheckboxField::create('AllowPickup', 'Allow Pickup'),
 				HtmlEditorField::create('ShippingMessage', 'Shipping Message')->setRows(20),
 				HtmlEditorField::create('InternationalShippingWarningMessage', 'International Shipping Warning Message')->setRows(20)
 			),
