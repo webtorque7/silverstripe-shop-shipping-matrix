@@ -28,6 +28,10 @@ class ShippingWeightRange extends DataObject{
 		'MaxWeight' => 'Maximum Weight(kg)'
 	);
 
+	public function canView($member = null) {
+		return true;
+	}
+
 	public function getCMSFields(){
 		$fields = parent::getCMSFields();
 		$fields->removeByName('Sort');

@@ -15,13 +15,15 @@ class ShippingMatrixModifier extends ShippingModifier
 
 	public function populate($data) {
 		$shippingCharge = 0;
-		$deliveryCountry = $data['DeliveryCountry'];
+		if ($deliveryCountry = $data['DeliveryCountry']){
+			$this->DefaultCountry = $deliveryCountry;
+		}
 		if ($shippingOption = $data['ShippingOptions']) {
+			$this->ShippingType = $shippingOption;
+
 			switch ($shippingOption) {
 			case "domestic":
-				if ($deliveryRegion = $data['DeliveryRegion']) {
-					$shippingCharge = DomesticShippingCarrier::process($deliveryRegion);
-				}
+				$shippingCharge = DomesticShippingCarrier::process();
 				break;
 			case "international":
 				$items = $this->Order()->Items();
@@ -29,8 +31,6 @@ class ShippingMatrixModifier extends ShippingModifier
 				break;
 			}
 		}
-		$this->DefaultCountry = $deliveryCountry;
-		$this->ShippingType = $shippingOption;
 		$this->Amount = $shippingCharge;
 		$this->write();
 	}
@@ -44,7 +44,8 @@ class ShippingMatrixModifier extends ShippingModifier
 	}
 
 	public function TableTitle() {
-		return 'Shipping (' . $this->ShippingType . ')';
+//		return 'Shipping (' . $this->ShippingType . ')';
+		return 'Shipping';
 	}
 
 	public static function get_shipping_countries() {
@@ -53,7 +54,7 @@ class ShippingMatrixModifier extends ShippingModifier
 		if (!($countries = $cache->load('deliveryCountry'))) {
 			$defultZone = InternationalShippingZone::get()->filter('DefaultZone', true)->first();
 			if(!empty($defultZone)){
-				$countries = ShopConfig::$iso_3166_countryCodes;
+				SiteConfig::current_site_config()->getCountriesList();
 			}
 			else{
 				$countries = array();

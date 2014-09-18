@@ -25,7 +25,9 @@ class InternationalShippingZone extends DataObject{
 	private static $summary_fields = array(
 		'Title' => 'Title'
 	);
-
+	public function canView($member = null) {
+		return true;
+	}
 	public function getCMSFields(){
 		$fields = parent::getCMSFields();
 		$fields->removeByName('Sort');
@@ -35,7 +37,7 @@ class InternationalShippingZone extends DataObject{
 			new CheckboxSetField(
 				'ShippingCountries',
 				'Shipping Countries',
-				ShopConfig::$iso_3166_countryCodes));
+				SiteConfig::current_site_config()->getCountriesList()));
 		return $fields;
 	}
 

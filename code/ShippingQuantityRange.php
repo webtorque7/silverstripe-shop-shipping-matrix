@@ -28,6 +28,10 @@ class ShippingQuantityRange extends DataObject{
 		'MaxQuantity' => 'Maximum Quantity'
 	);
 
+	public function canView($member = null) {
+		return true;
+	}
+
 	public function getCMSFields(){
 		$fields = parent::getCMSFields();
 		$fields->removeByName('Sort');

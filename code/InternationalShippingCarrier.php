@@ -32,6 +32,10 @@ class InternationalShippingCarrier extends DataObject{
 
 	protected $items = array();
 
+	public function canView($member = null) {
+		return true;
+	}
+
 	public function getCMSFields(){
 		$fields = parent::getCMSFields();
 
@@ -56,7 +60,7 @@ class InternationalShippingCarrier extends DataObject{
 
 		$ZoneRangeGrid = GridField::create(
 			'ShippingRates',
-			'Shipping Shipping Rates',
+			'Shipping Rates',
 			$this->ShippingRates(),
 			GridFieldConfig_RelationEditor::create()
 				->addComponent(GridFieldOrderableRows::create('Sort')));
@@ -145,51 +149,51 @@ class InternationalShippingCarrier extends DataObject{
 	}
 
 	public function calculateQuantityBased($zone) {
+		$charge = 0;
 		$totalQuantity = 0;
 		foreach($this->items as $item){
 			$totalQuantity += $item->Quantity;
 		}
 		if($totalQuantity > 0){
+
 			$quantityRange = ShippingQuantityRange::get()
 				->where($totalQuantity . ' BETWEEN "MinQuantity" AND "MaxQuantity"')
 				->first();
 
-			$quantityRate = '';
+			if($quantityRange){
+				$carrier = '';
+				$rates = ShippingRate::get()->filter(array('ShippingQuantityRangeID' => $quantityRange->ID, 'InternationalShippingZoneID' => $zone->ID));
 
-			if(!empty($quantityRange)){
-				$quantityRate = ShippingRate::get()
-					->leftJoin('InternationalShippingCarrier',
-						'"InternationalShippingCarrier"."ID" = "ShippingRate"."InternationalShippingCarrierID"')
-					->where('"InternationalShippingZoneID" = ' . $zone->ID . '
-					AND "ShippingQuantityRangeID" = ' . $quantityRange->ID)
-					->first();
-			}
+				if($rates){
+					foreach($rates as $rate){
+						if($rate->InternationalShippingCarrier()){
+							$carrier = $rate->InternationalShippingCarrier();
+							$charge = $rate->ShippingCharge;
+							break;
+						}
+					}
+				}
 
-			if(!empty($quantityRate)){
-				$totalCharge = $quantityRate->ShippingCharge;
-
-				//save used carriers to session so it's tracking url can be used later
-				$carrier = $quantityRate->InternationalShippingCarrier();
-				if ($carriers = Session::get('UsedCarriers')) {
-					if(!in_array($carrier->ID, $carriers, true)){
+				if($carrier){
+					//save used carriers to session so it's tracking url can be used later
+					if ($carriers = Session::get('UsedCarriers')) {
+						if(!in_array($carrier->ID, $carriers, true)){
+							array_push($carriers, $carrier->ID);
+							Session::set('UsedCarriers', $carriers);
+						}
+					}
+					else{
+						$carriers = array();
 						array_push($carriers, $carrier->ID);
 						Session::set('UsedCarriers', $carriers);
 					}
 				}
-				else{
-					$carriers = array();
-					array_push($carriers, $carrier->ID);
-					Session::set('UsedCarriers', $carriers);
-				}
-
-				return $totalCharge;
 			}
 			else{
-				user_error('The total quantity of the items exceeds the maximum quantity of our couriers,
-					please contact us to explore other shipping methods.');
+				user_error('Sorry, there is currently no matching courier for this order please contact us to arrange an alternative.');
 			}
 		}
-		return 0;
+		return $charge;
 	}
 
 	public function calculate($zone) {
