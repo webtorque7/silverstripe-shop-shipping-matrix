@@ -9,7 +9,7 @@
 class ShippingMatrixModifier extends ShippingModifier
 {
 	private static $db = array(
-		'ShippingType' => 'Enum("domestic,international,pickup,free","domestic")',
+		'ShippingType' => 'Enum("domestic,international,pickup,free")',
 		'DefaultCountry' => 'Varchar(10)'
 	);
 
