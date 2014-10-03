@@ -72,7 +72,7 @@ class DomesticShippingCarrier extends DataObject{
 
 		foreach ($items as $item) {
 			$product = $item->buyable();
-			if($product->ClassName != 'Event' || $product->ClassName != 'GiftVoucherProduct'){
+			if($product->ClassName != 'Event' && $product->ClassName != 'GiftVoucherProduct'){
 				$freeShipping = false;
 			}
 		}
