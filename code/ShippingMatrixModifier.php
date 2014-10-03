@@ -18,12 +18,15 @@ class ShippingMatrixModifier extends ShippingModifier
 		if ($deliveryCountry = $data['DeliveryCountry']){
 			$this->DefaultCountry = $deliveryCountry;
 		}
+		//TODO currently region field doesn't exist on checkout page.
+		$deliveryRegion = null;
 		if ($shippingOption = $data['ShippingOptions']) {
 			$this->ShippingType = $shippingOption;
 
 			switch ($shippingOption) {
 			case "domestic":
-				$shippingCharge = DomesticShippingCarrier::process();
+				$items = $this->Order()->Items();
+				$shippingCharge = DomesticShippingCarrier::process($items, $deliveryRegion);
 				break;
 			case "international":
 				$items = $this->Order()->Items();

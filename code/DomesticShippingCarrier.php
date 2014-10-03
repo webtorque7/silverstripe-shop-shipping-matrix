@@ -66,36 +66,47 @@ class DomesticShippingCarrier extends DataObject{
 		return $this->DomesticShippingRegions();
 	}
 
-	public static function process($region = null) {
-		//find the carrier that ships in the region
-		if(!isset($region)){
-			$region = 'AUK';
+	public static function process($items, $region = null) {
+		$charge = 0;
+		$freeShipping = true;
+
+		foreach ($items as $item) {
+			$product = $item->buyable();
+			if($product->ClassName != 'Event' || $product->ClassName != 'GiftVoucherProduct'){
+				$freeShipping = false;
+			}
 		}
-		$regionObject = DomesticShippingRegion::get()->filter(array('Region' => $region))->first();
 
-		if($regionObject){
-			$charge = $regionObject->Amount;
-			$carrier = $regionObject->DomesticShippingCarriers()->first();
-			if($carrier){
-				foreach($carrier->DomesticShippingExtras() as $shippingExtra){
-					$charge += $shippingExtra->Amount;
-				}
+		if($freeShipping == false){
+			if(!isset($region)){
+				$region = 'AUK';
+			}
+			$regionObject = DomesticShippingRegion::get()->filter(array('Region' => $region))->first();
+			if($regionObject){
+				$charge = $regionObject->Amount;
+				$carrier = $regionObject->DomesticShippingCarriers()->first();
+				if($carrier){
+					foreach($carrier->DomesticShippingExtras() as $shippingExtra){
+						$charge += $shippingExtra->Amount;
+					}
 
-				//save used carriers to session so it's tracking url can be used later
-				if ($carriers = Session::get('UsedCarriers')) {
-					if(!in_array($carrier->ID, $carriers, true)){
+					//save used carriers to session so it's tracking url can be used later
+					if ($carriers = Session::get('UsedCarriers')) {
+						if(!in_array($carrier->ID, $carriers, true)){
+							array_push($carriers, $carrier->ID);
+							Session::set('UsedCarriers', $carriers);
+						}
+					}
+					else{
+						$carriers = array();
 						array_push($carriers, $carrier->ID);
 						Session::set('UsedCarriers', $carriers);
 					}
-				}
-				else{
-					$carriers = array();
-					array_push($carriers, $carrier->ID);
-					Session::set('UsedCarriers', $carriers);
-				}
 
-				return $charge;
+
+				}
 			}
 		}
+		return $charge;
 	}
 }
