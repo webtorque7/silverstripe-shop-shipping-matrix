@@ -13,29 +13,36 @@ class ShippingMatrixModifier extends ShippingModifier
 		'DefaultCountry' => 'Varchar(10)'
 	);
 
-	public function populate($data) {
-		$shippingCharge = 0;
-		if ($deliveryCountry = $data['DeliveryCountry']){
-			$this->DefaultCountry = $deliveryCountry;
-		}
-		//TODO currently region field doesn't exist on checkout page.
-		$deliveryRegion = null;
-		if ($shippingOption = $data['ShippingOptions']) {
-			$this->ShippingType = $shippingOption;
-
-			switch ($shippingOption) {
-			case "domestic":
-				$items = $this->Order()->Items();
-				$shippingCharge = DomesticShippingCarrier::process($items, $deliveryRegion);
-				break;
-			case "international":
-				$items = $this->Order()->Items();
-				$shippingCharge = InternationalShippingCarrier::process($items, $deliveryCountry);
-				break;
+	public function populate($data = null) {
+		if(!empty($data)){
+			$shippingCharge = 0;
+			if ($deliveryCountry = $data['DeliveryCountry']){
+				$this->DefaultCountry = $deliveryCountry;
 			}
+			//TODO currently region field doesn't exist on checkout page.
+			$deliveryRegion = null;
+			if ($shippingOption = $data['ShippingOptions']) {
+				$this->ShippingType = $shippingOption;
+
+				switch ($shippingOption) {
+					case "domestic":
+						$items = $this->Order()->Items();
+						$shippingCharge = DomesticShippingCarrier::process($items, $deliveryRegion);
+						break;
+					case "international":
+						$items = $this->Order()->Items();
+						$shippingCharge = InternationalShippingCarrier::process($items, $deliveryCountry);
+						break;
+				}
+			}
+			$this->Amount = $shippingCharge;
+			$this->write();
 		}
-		$this->Amount = $shippingCharge;
-		$this->write();
+		else{
+			$this->ShippingType = null;
+			$this->Amount = 0;
+			$this->write();
+		}
 	}
 
 	public function ShowInTable() {
