@@ -141,8 +141,9 @@ class InternationalShippingCarrier extends DataObject{
 				return $totalCharge;
 			}
 			else{
-				user_error('The total weight of the items exceeds the maximum weight of our couriers,
-				please contact us to arrange other shipping methods.');
+				return 0;
+//				user_error('The total weight of the items exceeds the maximum weight of our couriers,
+//				please contact us to arrange other shipping methods.');
 			}
 		}
 		return 0;
@@ -190,7 +191,8 @@ class InternationalShippingCarrier extends DataObject{
 				}
 			}
 			else{
-				user_error('Sorry, there is currently no matching courier for this order please contact us to arrange an alternative.');
+				$charge = 0;
+//				user_error('Sorry, there is currently no matching courier for this order please contact us to arrange an alternative.');
 			}
 		}
 		return $charge;
@@ -225,10 +227,6 @@ class InternationalShippingCarrier extends DataObject{
 		foreach ($carriers as $carrier) {
 			if(!empty($shippingZone)){
 				$charge += $carrier->calculate($shippingZone);
-			}
-			else{
-				user_error('Selected country is not supported,
-					please contact us to arrange other shipping methods.');
 			}
 		}
 		return $charge;
