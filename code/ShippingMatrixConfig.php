@@ -21,6 +21,10 @@ class ShippingMatrixConfig extends DataExtension{
 		'DomesticShippingText' => 'Varchar(200)',
 		'InternationalShippingText' => 'HTMLText',
 		'PickupText' => 'Varchar(200)',
+
+		//PBT courier
+		'PBTAccountNumber' => 'Varchar(20)',
+		'PBTCourierNumber' => 'Varchar(20)'
 	);
 
 	public function updateCMSFields(FieldList $fields) {
@@ -30,6 +34,8 @@ class ShippingMatrixConfig extends DataExtension{
 		);
 		$shippingTab = new TabSet("ShippingTabs",
 			$main = new Tab("Main",
+				TextField::create('PBTAccountNumber', 'PBT Account Number'),
+				TextField::create('PBTCourierNumber', 'PBT Courier Account Number'),
 				TextField::create('FreeShippingQuantity', 'Free Shipping Quantity'),
 				TextField::create('FreeShippingText', 'Free Shipping Text'),
 				TextField::create('DomesticShippingText', 'Domestic Shipping Text'),
