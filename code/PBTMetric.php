@@ -18,6 +18,10 @@ class PBTMetric extends DataObject{
 		'ShippingMatrixConfig' => 'SiteConfig'
 	);
 
+	private static $casting = array(
+		'PackageSize' => 'Int'
+	);
+
 	private static $summary_fields = array(
 		'Code' => 'Code',
 		'PackageDescription' => 'PackageDescription',
@@ -29,7 +33,7 @@ class PBTMetric extends DataObject{
 		$fields->removeByName('ShippingMatrixConfigID');
 		$fields->addFieldsToTab('Root.Main', array(
 			TextField::create('Code', 'Code'),
-			NumericField::create('PackageSize', 'Package Size')->setDescription('Number of bottles in numeric value'),
+			TextField::create('PackageSize', 'Package Size')->setDescription('Number of bottles in numeric value'),
 			TextField::create('Cubic', 'Cubic'),
 			TextareaField::create('PackageDescription', 'Package Description')
 		));
