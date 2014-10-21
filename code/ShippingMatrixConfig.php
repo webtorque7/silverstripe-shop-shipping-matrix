@@ -27,6 +27,10 @@ class ShippingMatrixConfig extends DataExtension{
 		'PBTCourierNumber' => 'Varchar(20)'
 	);
 
+	private static $has_many = array(
+		'PBTMetric' => 'PBTMetric'
+	);
+
 	public function updateCMSFields(FieldList $fields) {
 		$countries = SiteConfig::current_site_config()->getCountriesList();
 		$fields->addFieldToTab('Root.Shop.ShopTabs.Main',
@@ -34,8 +38,6 @@ class ShippingMatrixConfig extends DataExtension{
 		);
 		$shippingTab = new TabSet("ShippingTabs",
 			$main = new Tab("Main",
-				TextField::create('PBTAccountNumber', 'PBT Account Number'),
-				TextField::create('PBTCourierNumber', 'PBT Courier Account Number'),
 				TextField::create('FreeShippingQuantity', 'Free Shipping Quantity'),
 				TextField::create('FreeShippingText', 'Free Shipping Text'),
 				TextField::create('DomesticShippingText', 'Domestic Shipping Text'),
@@ -44,6 +46,16 @@ class ShippingMatrixConfig extends DataExtension{
                                 CheckboxField::create('AllowPickup', 'Allow Pickup'),
 				HtmlEditorField::create('ShippingMessage', 'Shipping Message')->setRows(20),
 				HtmlEditorField::create('InternationalShippingWarningMessage', 'International Shipping Warning Message')->setRows(20)
+			),
+			$PBT = new Tab("PBT",
+				TextField::create('PBTAccountNumber', 'PBT Account Number'),
+				TextField::create('PBTCourierNumber', 'PBT Courier Account Number'),
+				GridField::create(
+					'PBTMetric',
+					'PBT Metric',
+					$this->owner->PBTMetric(),
+					GridFieldConfig_RecordEditor::create()
+				)
 			),
 			$internationalCarriers = new Tab("InternationalCarriers",
 				GridField::create(
@@ -79,4 +91,4 @@ class ShippingMatrixConfig extends DataExtension{
 		);
 		$fields->addFieldToTab('Root.Shop.ShopTabs.ShippingMatrix', $shippingTab);
 	}
-} 
+}
