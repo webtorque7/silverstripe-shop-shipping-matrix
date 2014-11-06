@@ -203,12 +203,13 @@ class InternationalShippingCarrier extends DataObject{
 	}
 
 	public function distributeItem($item){
-		$product = $item->buyable();
-		$productTypeArray = explode(',', $this->SupportedProductType);
-		if(in_array($product->ClassName, $productTypeArray)){
-			array_push($this->items, $item);
+		if($product = $item->buyable()){
+			$productTypeArray = explode(',', $this->SupportedProductType);
+			if(in_array($product->ClassName, $productTypeArray)){
+				array_push($this->items, $item);
+			}
+			return $this;
 		}
-		return $this;
 	}
 
 	public static function process($items, $country) {
