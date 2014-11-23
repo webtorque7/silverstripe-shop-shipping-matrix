@@ -69,12 +69,22 @@ class DomesticShippingCarrier extends DataObject{
 	public static function process($items, $region = null) {
 		$charge = 0;
 		$freeShipping = true;
+		$wineCount = 0;
 
+		//If order only contains events/gift vouchers then shipping is free
 		foreach ($items as $item) {
 			$product = $item->buyable();
 			if($product->ClassName != 'Event' && $product->ClassName != 'GiftVoucherProduct'){
 				$freeShipping = false;
 			}
+			if($product->ClassName != 'WineProduct'){
+				$wineCount++;
+			}
+		}
+
+		//If the bottles of wine in the order is 12 or more then shipping is free
+		if($wineCount >= 12){
+			$freeShipping = true;
 		}
 
 		if($freeShipping == false){

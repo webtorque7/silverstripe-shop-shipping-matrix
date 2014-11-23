@@ -50,7 +50,8 @@ class ShippingMatrixModifier extends ShippingModifier
 	}
 
 	public function value($subtotal = null) {
-		return $this->Amount();
+		//Shipping modifier is calculated using the populate function.
+		return 0;
 	}
 
 	public function TableTitle() {
