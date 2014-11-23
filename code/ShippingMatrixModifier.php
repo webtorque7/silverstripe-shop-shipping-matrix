@@ -1,11 +1,11 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: davis
  * Date: 06/11/13
  * Time: 13:58
  */
-
 class ShippingMatrixModifier extends ShippingModifier
 {
 	private static $db = array(
@@ -18,46 +18,48 @@ class ShippingMatrixModifier extends ShippingModifier
 		'InternationalShippingCarrier' => 'InternationalShippingCarrier'
 	);
 
-	public function populate($data, $order) {
-		$shippingCharge = 0;
-		$deliveryCountry = $data['DeliveryCountry'];
-		$deliveryRegion = $data['DeliveryRegion'];
+	/**
+	 * Calculates value to store, based on incoming running total.
+	 * @param float $incoming the incoming running total.
+	 */
+	public function value($incoming) {
 
-		if ($shippingOption = $data['ShippingOptions']) {
-			switch ($shippingOption) {
-			case "free-domestic":
-				$this->IsDomestic = true;
-				break;
+		$this->calculate($this->Order());
 
-			case "domestic":
-				$this->IsDomestic = true;
-				$extraCosts = 0;
-				if ($extras = DomesticShippingExtra::get()) {
-					foreach ($extras as $extra) {
-						$extraCosts += $extra->Amount;
-					}
-				}
-				if ($deliveryRegion) {
-					$region = DomesticShippingRegion::get()->filter('Region', $deliveryRegion)->first();
-					$shippingCharge = $region->Amount + $extraCosts;
-				}
-				//TODO domestic shipping is a flat rate not per quantity or weight for now.
-				break;
-
-			case "international":
-				$this->IsDomestic = false;
-				$items = $this->Order()->Items();
-				$shippingCharge = InternationalShippingCarrier::process($items, $deliveryCountry);
-				break;
-			}
-		}
-//		Debug::dump($shippingCharge);exit;
-		$this->Amount = $shippingCharge;
-		$this->write();
+		return $this->Amount;
 	}
 
-	public function value($subtotal = null) {
-		return $this->Amount();
+	public function calculate($order) {
+		$shippingCharge = 0;
+		$deliveryCountry = $order->ShippingAddress->Country;
+		$deliveryRegion = $order->ShippingAddress->Region;
+
+		$config = SiteConfig::current_site_config();
+
+		if (!$deliveryCountry) return;
+
+		if ($deliveryCountry == $config->DomesticCountry) {
+			$this->IsDomestic = true;
+
+			$extraCosts = 0;
+			if ($extras = DomesticShippingExtra::get()) {
+				foreach ($extras as $extra) {
+					$extraCosts += $extra->Amount;
+				}
+			}
+
+			if ($deliveryRegion) {
+				$region = DomesticShippingRegion::get()->filter('Region:PartialMatch', $deliveryRegion)->first();
+				$shippingCharge = $region->Amount + $extraCosts;
+			}
+		}
+		else {
+			$this->IsDomestic = false;
+			$items = $this->Order()->Items();
+			$shippingCharge = InternationalShippingCarrier::process($items, $deliveryCountry);
+		}
+
+		$this->Amount = $shippingCharge;
 	}
 
 	public function ShowInTable() {
@@ -65,8 +67,11 @@ class ShippingMatrixModifier extends ShippingModifier
 	}
 
 	public function TableTitle() {
-		if ($this->ShippingTitle) return $this->ShippingTitle;
-		else return 'Shipping';
+		if ($this->ShippingTitle) {
+			return $this->ShippingTitle;
+		} else {
+			return 'Shipping';
+		}
 	}
 
 	public static function get_shipping_countries() {
@@ -74,13 +79,12 @@ class ShippingMatrixModifier extends ShippingModifier
 
 		if (!($countries = $cache->load('deliveryCountry'))) {
 			$defultZone = InternationalShippingZone::get()->filter('DefaultZone', true)->first();
-			if(!empty($defultZone)){
+			if (!empty($defultZone)) {
 				$countries = ShopConfig::$iso_3166_countryCodes;
-			}
-			else{
+			} else {
 				$countries = array();
 				$zones = InternationalShippingZone::get();
-				foreach($zones as $zone){
+				foreach ($zones as $zone) {
 					array_push($countries, $zone->ShippingCountries);
 				}
 				asort($countries);
