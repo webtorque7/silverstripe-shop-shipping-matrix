@@ -20,7 +20,7 @@ class ShippingMatrixConfig extends DataExtension{
 	public function updateCMSFields(FieldList $fields) {
 		$countries = SiteConfig::current_site_config()->getCountriesList();
 		$fields->addFieldToTab('Root.Shop.ShopTabs.Main',
-			DropdownField::create("DomesticCountry",_t('Address.COUNTRY','Dometstic Country'), $countries, 'NZ')
+			DropdownField::create("DomesticCountry",_t('ShippingMatrix.DOMESTICCOUNTRY','Domestic Country'), $countries, 'NZ')
 		);
 		$shippingTab = new TabSet("ShippingTabs",
 			$main = new Tab("Main",
