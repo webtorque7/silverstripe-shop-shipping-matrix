@@ -105,7 +105,7 @@ class InternationalShippingCarrier extends DataObject{
 				$weightCharge = $totalWeight * $rate;
 			}
 			else{
-				user_error('The total weight of the items exceeds the maximum weight of our couriers,
+				throw new Exception('The total weight of the items exceeds the maximum weight of our couriers,
 				please contact us to arrange other shipping methods.');
 			}
 			return $weightCharge;
@@ -135,7 +135,7 @@ class InternationalShippingCarrier extends DataObject{
 				$quantityCharge = $totalQuantity * $rate;
 			}
 			else{
-				user_error('The total quantity of the items exceeds the maximum quantity of our couriers,
+				throw new Exception('The total quantity of the items exceeds the maximum quantity of our couriers,
 					please contact us to explore other shipping methods.');
 			}
 			return $quantityCharge;
@@ -160,6 +160,12 @@ class InternationalShippingCarrier extends DataObject{
 		$shippingZone = InternationalShippingZone::get_shipping_zone($country);
 		$carriers = InternationalShippingCarrier::get()->toArray();
 
+		//must have a shipping zone
+		if (!$shippingZone) {
+			throw new Exception('Selected country is not supported,
+					please contact us to arrange other shipping methods.');
+		}
+
 		//distribute items to carrier which ships it
 		foreach ($items as $item) {
 			foreach ($carriers as $carrier) {
@@ -172,10 +178,6 @@ class InternationalShippingCarrier extends DataObject{
 		foreach ($carriers as $carrier) {
 			if(!empty($shippingZone)){
 				$charge += $carrier->calculate($shippingZone);
-			}
-			else{
-				user_error('Selected country is not supported,
-					please contact us to arrange other shipping methods.');
 			}
 		}
 		return $charge;

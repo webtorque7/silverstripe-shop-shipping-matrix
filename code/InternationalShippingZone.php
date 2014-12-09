@@ -47,6 +47,8 @@ class InternationalShippingZone extends DataObject{
 				return $shippingZone;
 			}
 		}
-		return false;
+
+		//fall back looking for default zone
+		return InternationalShippingZone::get()->filter('DefaultZone', 1)->first();
 	}
 } 
