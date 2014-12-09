@@ -67,6 +67,7 @@ class DomesticShippingCarrier extends DataObject{
 	}
 
 	public static function process($items, $region = null) {
+
 		$charge = 0;
 		$freeShipping = true;
 		$wineCount = 0;
@@ -77,8 +78,8 @@ class DomesticShippingCarrier extends DataObject{
 			if($product->ClassName != 'Event' && $product->ClassName != 'GiftVoucherProduct'){
 				$freeShipping = false;
 			}
-			if($product->ClassName != 'WineProduct'){
-				$wineCount++;
+			if($product->ClassName == 'WineProduct'){
+				$wineCount += $item->Quantity;
 			}
 		}
 
@@ -117,6 +118,7 @@ class DomesticShippingCarrier extends DataObject{
 				}
 			}
 		}
+
 		return $charge;
 	}
 }
