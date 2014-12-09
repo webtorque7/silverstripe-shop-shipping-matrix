@@ -11,7 +11,9 @@ class ShippingMatrixModifier extends ShippingModifier
 	private static $db = array(
 		'ShippingTitle' => 'Varchar(255)',
 		'IsDomestic' => 'Boolean',
-		'IsPickup' => 'Boolean'
+		'IsPickup' => 'Boolean',
+		'Country' => 'Varchar(3)',
+		'Region' => 'Varchar(50)'
 	);
 
 	private static $has_one = array(
@@ -31,14 +33,14 @@ class ShippingMatrixModifier extends ShippingModifier
 
 	public function calculate($order) {
 		$shippingCharge = 0;
-		$deliveryCountry = $order->ShippingAddress->Country;
-		$deliveryRegion = $order->ShippingAddress->Region;
+		$this->loadCountry();
+		$this->loadRegion();
 
 		$config = SiteConfig::current_site_config();
 
-		if (!$deliveryCountry) return;
+		if (!$this->Country) return;
 
-		if ($deliveryCountry == $config->DomesticCountry) {
+		if ($this->Country == $config->DomesticCountry) {
 			$this->IsDomestic = true;
 
 			$extraCosts = 0;
@@ -48,18 +50,26 @@ class ShippingMatrixModifier extends ShippingModifier
 				}
 			}
 
-			if ($deliveryRegion) {
-				$region = DomesticShippingRegion::get()->filter('Region:PartialMatch', $deliveryRegion)->first();
+			if ($this->Region) {
+				$region = DomesticShippingRegion::get()->filter('Region:PartialMatch', $this->Region)->first();
 				$shippingCharge = $region->Amount + $extraCosts;
 			}
 		}
 		else {
 			$this->IsDomestic = false;
 			$items = $this->Order()->Items();
-			$shippingCharge = InternationalShippingCarrier::process($items, $deliveryCountry);
+			$shippingCharge = InternationalShippingCarrier::process($items, $this->Country);
 		}
 
 		$this->Amount = $shippingCharge;
+	}
+
+	public function loadCountry() {
+		return $this->Country = ($this->Country ? $this->Country : $this->Order()->ShippingAddress()->Country);
+	}
+
+	public function loadRegion() {
+		return $this->Region = ($this->Region ? $this->Region : $this->Order()->ShippingAddress()->Region);
 	}
 
 	public function ShowInTable() {
@@ -70,7 +80,15 @@ class ShippingMatrixModifier extends ShippingModifier
 		if ($this->ShippingTitle) {
 			return $this->ShippingTitle;
 		} else {
-			return 'Shipping';
+			//add region or country to title
+			$extra = '';
+			if ($this->IsDomestic && ($region = $this->loadRegion())) {
+				$extra = ' (' . $region . ')';
+			}
+			else if ($country = $this->loadCountry()) {
+				$extra = ' (' . ShopConfig::countryCode2name($country) . ')';
+			}
+			return 'Shipping' . $extra;
 		}
 	}
 
