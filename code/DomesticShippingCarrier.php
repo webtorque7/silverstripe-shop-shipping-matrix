@@ -71,6 +71,7 @@ class DomesticShippingCarrier extends DataObject{
 		$charge = 0;
 		$freeShipping = true;
 		$wineCount = 0;
+		$carriers = array();
 
 		//If order only contains events/gift vouchers then shipping is free
 		foreach ($items as $item) {
@@ -101,24 +102,11 @@ class DomesticShippingCarrier extends DataObject{
 						$charge += $shippingExtra->Amount;
 					}
 
-					//save used carriers to session so it's tracking url can be used later
-					if ($carriers = Session::get('UsedCarriers')) {
-						if(!in_array($carrier->ID, $carriers, true)){
-							array_push($carriers, $carrier->ID);
-							Session::set('UsedCarriers', $carriers);
-						}
-					}
-					else{
-						$carriers = array();
-						array_push($carriers, $carrier->ID);
-						Session::set('UsedCarriers', $carriers);
-					}
-
-
+					array_push($carriers, $carrier->ID);
 				}
 			}
 		}
 
-		return $charge;
+		return array('Amount' => $charge, 'Carriers' => $carriers);
 	}
 }

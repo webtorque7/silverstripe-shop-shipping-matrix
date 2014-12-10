@@ -216,6 +216,7 @@ class InternationalShippingCarrier extends DataObject{
 		$shippingZone = InternationalShippingZone::get_shipping_zone($country);
 		$carriers = InternationalShippingCarrier::get()->toArray();
 
+		$usedCarriers = array();
 		//distribute items to carrier which ships it
 		foreach ($items as $item) {
 			foreach ($carriers as $carrier) {
@@ -227,9 +228,14 @@ class InternationalShippingCarrier extends DataObject{
 		$charge = 0;
 		foreach ($carriers as $carrier) {
 			if(!empty($shippingZone)){
-				$charge += $carrier->calculate($shippingZone);
+				$carrierCharge = $carrier->calculate($shippingZone);
+				if ($carrierCharge > 0) {
+					$charge += $carrierCharge;
+					$usedCarriers[] = $carrier;
+				}
 			}
 		}
-		return $charge;
+
+		return array('Amount' => $charge, 'Carriers' => $usedCarriers);
 	}
 }

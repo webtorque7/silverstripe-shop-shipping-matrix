@@ -59,9 +59,24 @@ class ShippingMatrixModifier extends ShippingModifier
 				$items = $this->Order()->Items();
 
 				if ($address->Country === SiteConfig::current_site_config()->DomesticCountry) {
-					$shippingCharge = DomesticShippingCarrier::process($items, $address->Region);
+					$response = DomesticShippingCarrier::process($items, $address->Region);
+					$shippingCharge = $response['Amount'];
+
+					if (!empty($response['Carriers'])) {
+						foreach ($response['Carriers'] as $carrier) {
+							$this->Order()->DomesticCarriers()->add($carrier);
+						}
+					}
 				} else {
-					$shippingCharge = InternationalShippingCarrier::process($items, $address->Country);
+					$response = InternationalShippingCarrier::process($items, $address->Country);
+
+					$shippingCharge = $response['Amount'];
+
+					if (!empty($response['Carriers'])) {
+						foreach ($response['Carriers'] as $carrier) {
+							$this->Order()->InternationalCarriers()->add($carrier);
+						}
+					}
 				}
 			}
 		}
