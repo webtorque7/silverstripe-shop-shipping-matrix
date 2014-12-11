@@ -27,11 +27,21 @@ class ShippingMatrixModifier extends ShippingModifier
 				switch ($shippingOption) {
 					case "domestic":
 						$items = $this->Order()->Items();
-						$shippingCharge = DomesticShippingCarrier::process($items, $deliveryRegion);
+						$response = DomesticShippingCarrier::process($items, $deliveryRegion);
+						$shippingCharge = $response['Amount'];
+						if (!empty($response['Carriers'])) foreach ($response['Carriers'] as $carrier) {
+							$this->Order()->DomesticCarriers()->removeAll();
+							$this->Order()->DomesticCarriers()->add($carrier);
+						}
 						break;
 					case "international":
 						$items = $this->Order()->Items();
-						$shippingCharge = InternationalShippingCarrier::process($items, $deliveryCountry);
+						$response = InternationalShippingCarrier::process($items, $deliveryCountry);
+						$shippingCharge = $response['Amount'];
+						if (!empty($response['Carriers'])) foreach ($response['Carriers'] as $carrier) {
+							$this->Order()->InternationalCarriers()->removeAll();
+							$this->Order()->InternationalCarriers()->add($carrier);
+						}
 						break;
 				}
 			}
@@ -64,6 +74,7 @@ class ShippingMatrixModifier extends ShippingModifier
 
 					if (!empty($response['Carriers'])) {
 						foreach ($response['Carriers'] as $carrier) {
+							$this->Order()->DomesticCarriers()->removeAll();
 							$this->Order()->DomesticCarriers()->add($carrier);
 						}
 					}
@@ -74,6 +85,7 @@ class ShippingMatrixModifier extends ShippingModifier
 
 					if (!empty($response['Carriers'])) {
 						foreach ($response['Carriers'] as $carrier) {
+							$this->Order()->InternationalCarriers()->removeAll($carrier);
 							$this->Order()->InternationalCarriers()->add($carrier);
 						}
 					}
