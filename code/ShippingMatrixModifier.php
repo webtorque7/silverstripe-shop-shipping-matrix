@@ -14,44 +14,45 @@ class ShippingMatrixModifier extends ShippingModifier
 	);
 
 	public function populate($data = null) {
-		if (!empty($data)) {
-			$shippingCharge = 0;
-			if ($deliveryCountry = $data['DeliveryCountry']) {
-				$this->DefaultCountry = $deliveryCountry;
-			}
-			//TODO currently region field doesn't exist on checkout page.
-			$deliveryRegion = null;
-			if ($shippingOption = $data['ShippingOptions']) {
-				$this->ShippingType = $shippingOption;
-
-				switch ($shippingOption) {
-					case "domestic":
-						$items = $this->Order()->Items();
-						$response = DomesticShippingCarrier::process($items, $deliveryRegion);
-						$shippingCharge = $response['Amount'];
-						if (!empty($response['Carriers'])) foreach ($response['Carriers'] as $carrier) {
-							$this->Order()->DomesticCarriers()->removeAll();
-							$this->Order()->DomesticCarriers()->add($carrier);
-						}
-						break;
-					case "international":
-						$items = $this->Order()->Items();
-						$response = InternationalShippingCarrier::process($items, $deliveryCountry);
-						$shippingCharge = $response['Amount'];
-						if (!empty($response['Carriers'])) foreach ($response['Carriers'] as $carrier) {
-							$this->Order()->InternationalCarriers()->removeAll();
-							$this->Order()->InternationalCarriers()->add($carrier);
-						}
-						break;
-				}
-			}
-			$this->Amount = $shippingCharge;
-			$this->write();
-		} else {
-			$this->ShippingType = null;
-			$this->Amount = 0;
-			$this->write();
-		}
+		$this->Amount = $this->value();
+//		if (!empty($data)) {
+//			$shippingCharge = 0;
+//			if ($deliveryCountry = $data['DeliveryCountry']) {
+//				$this->DefaultCountry = $deliveryCountry;
+//			}
+//			//TODO currently region field doesn't exist on checkout page.
+//			$deliveryRegion = null;
+//			if ($shippingOption = $data['ShippingOptions']) {
+//				$this->ShippingType = $shippingOption;
+//
+//				switch ($shippingOption) {
+//					case "domestic":
+//						$items = $this->Order()->Items();
+//						$response = DomesticShippingCarrier::process($items, $deliveryRegion);
+//						$shippingCharge = $response['Amount'];
+//						if (!empty($response['Carriers'])) foreach ($response['Carriers'] as $carrier) {
+//							$this->Order()->DomesticCarriers()->removeAll();
+//							$this->Order()->DomesticCarriers()->add($carrier);
+//						}
+//						break;
+//					case "international":
+//						$items = $this->Order()->Items();
+//						$response = InternationalShippingCarrier::process($items, $deliveryCountry);
+//						$shippingCharge = $response['Amount'];
+//						if (!empty($response['Carriers'])) foreach ($response['Carriers'] as $carrier) {
+//							$this->Order()->InternationalCarriers()->removeAll();
+//							$this->Order()->InternationalCarriers()->add($carrier);
+//						}
+//						break;
+//				}
+//			}
+//			$this->Amount = $shippingCharge;
+//			$this->write();
+//		} else {
+//			$this->ShippingType = null;
+//			$this->Amount = 0;
+//			$this->write();
+//		}
 	}
 
 	public function ShowInTable() {
