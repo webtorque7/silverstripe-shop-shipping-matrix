@@ -29,14 +29,14 @@ class DomesticShippingCarrier extends DataObject{
 
 		$shippingRegionGrid = GridField::create(
 			'DomesticShippingRegions',
-			'International Shipping Regions',
+			'Domestic Shipping Regions',
 			$this->DomesticShippingRegions(),
 			GridFieldConfig_RelationEditor::create()
 				->addComponent(GridFieldOrderableRows::create('Sort')));
 
 		$shippingExtraGrid = GridField::create(
 			'DomesticShippingExtras',
-			'International Shipping Extras',
+			'Domesic Shipping Extras',
 			$this->DomesticShippingExtras(),
 			GridFieldConfig_RelationEditor::create()
 				->addComponent(GridFieldOrderableRows::create('Sort')));

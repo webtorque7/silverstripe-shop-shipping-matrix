@@ -85,9 +85,18 @@ class InternationalShippingCarrier extends DataObject{
 	public function calculateWeightBased($zone) {
 		$totalWeight = 0;
 		foreach($this->items as $item){
-			$product = $item->buyable();
-			$totalWeight += $product->Weight * $item->Quantity;
+			$buyable = $item->buyable();
+			$weight = ($buyable->hasField('Weight') && $buyable->Weight)
+				? $buyable->Weight
+				: (
+					$buyable->ClassName == 'ProductVariation'
+						? $buyable->Product()->Weight
+						: 0
+				);
+
+			$totalWeight += $weight * $item->Quantity;
 		}
+
 		if($totalWeight > 0){
 			$weightRange = ShippingWeightRange::get()
 				->where($totalWeight . ' BETWEEN "MinWeight" AND "MaxWeight"');

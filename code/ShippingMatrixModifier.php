@@ -20,6 +20,8 @@ class ShippingMatrixModifier extends ShippingModifier
 		'InternationalShippingCarrier' => 'InternationalShippingCarrier'
 	);
 
+	private static $singular_name = 'Shipping';
+
 	/**
 	 * Calculates value to store, based on incoming running total.
 	 * @param float $incoming the incoming running total.
@@ -88,7 +90,7 @@ class ShippingMatrixModifier extends ShippingModifier
 			else if ($country = $this->loadCountry()) {
 				$extra = ' (' . ShopConfig::countryCode2name($country) . ')';
 			}
-			return 'Shipping' . $extra;
+			return parent::TableTitle() . $extra;
 		}
 	}
 
