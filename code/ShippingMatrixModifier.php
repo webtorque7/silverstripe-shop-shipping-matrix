@@ -67,11 +67,23 @@ class ShippingMatrixModifier extends ShippingModifier
 	}
 
 	public function loadCountry() {
-		return $this->Country = ($this->Country ? $this->Country : $this->Order()->ShippingAddress()->Country);
+		$country = '';
+
+		if ($this->Country) $country = $this->Country;
+		else if ($this->Order()->ShippingAddress()->exists()) $country = $this->Order()->ShippingAddress()->Country;
+		else if ($this->Order()->Member()->exists()) $country = $order->Member()->Country;
+
+		return $this->Country = $country;
 	}
 
 	public function loadRegion() {
-		return $this->Region = ($this->Region ? $this->Region : $this->Order()->ShippingAddress()->Region);
+		$region = '';
+
+		if ($this->Region) $region = $this->Region;
+		else if ($this->Order()->ShippingAddress()->exists()) $region = $this->Order()->ShippingAddress()->Region;
+		else if (!empty($this->config()->defaults['Region'])) $region = $this->config()->defaults['Region'];
+
+		return $this->Region = $region;
 	}
 
 	public function ShowInTable() {
