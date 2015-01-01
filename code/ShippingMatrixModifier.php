@@ -34,6 +34,7 @@ class ShippingMatrixModifier extends ShippingModifier
 	}
 
 	public function calculate($order) {
+
 		$shippingCharge = 0;
 		$this->loadCountry();
 		$this->loadRegion();
@@ -69,9 +70,9 @@ class ShippingMatrixModifier extends ShippingModifier
 	public function loadCountry() {
 		$country = '';
 
-		if ($this->Country) $country = $this->Country;
+		if ($this->Country && $this->Order()->Status !== 'Cart') $country = $this->Country;
 		else if ($this->Order()->ShippingAddress()->exists()) $country = $this->Order()->ShippingAddress()->Country;
-		else if ($this->Order()->Member()->exists()) $country = $order->Member()->Country;
+		else if ($this->Order()->Member()->exists()) $country = $this->Order()->Member()->Country;
 
 		return $this->Country = $country;
 	}
@@ -79,7 +80,7 @@ class ShippingMatrixModifier extends ShippingModifier
 	public function loadRegion() {
 		$region = '';
 
-		if ($this->Region) $region = $this->Region;
+		if ($this->Region && $this->Order()->Status !== 'Cart') $region = $this->Region;
 		else if ($this->Order()->ShippingAddress()->exists()) $region = $this->Order()->ShippingAddress()->Region;
 		else if (!empty($this->config()->defaults['Region'])) $region = $this->config()->defaults['Region'];
 
