@@ -13,8 +13,13 @@ class ShippingMatrixConfig extends DataExtension{
 		'ShippingMargin' => 'Percentage',
 		'ShippingMessage' => 'HTMLText',
 		'AllowPickup' => 'Boolean',
+		'RoundUpWeight' => 'Boolean',
 		'FreeShippingQuantity' => 'Int',
 		'InternationalShippingWarningMessage' => 'HTMLText'
+	);
+
+	private static $defaults = array(
+		'RoundUpWeight' => true
 	);
 
 	public function updateCMSFields(FieldList $fields) {
@@ -26,6 +31,8 @@ class ShippingMatrixConfig extends DataExtension{
 			$main = new Tab("Main",
 				TextField::create('FreeShippingQuantity', 'Free Shipping Quantity'),
 				CheckboxField::create('AllowPickup', 'Allow Pickup'),
+				CheckboxField::create('RoundUpWeight', 'Round up weight')
+					->setDescription('Round up weight to the nearest kg'),
 				HtmlEditorField::create('ShippingMessage', 'Shipping Message')->setRows(20),
 				HtmlEditorField::create('InternationalShippingWarningMessage', 'International Shipping Warning Message')->setRows(20)
 			),

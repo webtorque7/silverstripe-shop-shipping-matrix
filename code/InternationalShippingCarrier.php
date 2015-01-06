@@ -97,6 +97,11 @@ class InternationalShippingCarrier extends DataObject{
 			$totalWeight += $weight * $item->Quantity;
 		}
 
+		//round up to nearest weight
+		if (SiteConfig::current_site_config()->RoundUpWeight) {
+			$totalWeight = ceil($totalWeight);
+		}
+
 		if($totalWeight > 0){
 			$weightRange = ShippingWeightRange::get()
 				->where($totalWeight . ' BETWEEN "MinWeight" AND "MaxWeight"');
@@ -167,11 +172,17 @@ class InternationalShippingCarrier extends DataObject{
 
 	public static function process($items, $country) {
 		$shippingZone = InternationalShippingZone::get_shipping_zone($country);
-		$carriers = InternationalShippingCarrier::get()->toArray();
 
 		//must have a shipping zone
 		if (!$shippingZone) {
-			throw new Exception('Selected country is not supported,
+			throw new ShippingMatrixException('Selected country is not supported,
+					please contact us to arrange other shipping methods.');
+		}
+
+		$carriers = $shippingZone->InternationalShippingCarriers()->toArray();
+
+		if (empty($carriers)) {
+			throw new ShippingMatrixException('Selected country is not supported,
 					please contact us to arrange other shipping methods.');
 		}
 
