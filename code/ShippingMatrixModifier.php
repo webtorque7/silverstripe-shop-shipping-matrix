@@ -101,7 +101,7 @@ class ShippingMatrixModifier extends ShippingModifier
 				$extra = ' (' . $region . ')';
 			}
 			else if ($country = $this->loadCountry()) {
-				$extra = ' (' . ShopConfig::countryCode2name($country) . ')';
+				$extra = ' (' . _t('Countries.' . $country, ShopConfig::countryCode2name($country)) . ')';
 			}
 			return parent::TableTitle() . $extra;
 		}
