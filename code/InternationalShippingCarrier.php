@@ -119,8 +119,9 @@ class InternationalShippingCarrier extends DataObject{
 				$weightCharge = $totalWeight * $rate;
 			}
 			else{
-				throw new Exception('The total weight of the items exceeds the maximum weight of our couriers,
-				please contact us to arrange other shipping methods.');
+				$weightCharge = 0;
+//				throw new Exception('The total weight of the items exceeds the maximum weight of our couriers,
+//				please contact us to arrange other shipping methods.');
 			}
 			return $weightCharge;
 		}

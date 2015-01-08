@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Created by PhpStorm.
  * User: davis
@@ -73,6 +72,12 @@ class ShippingMatrixModifier extends ShippingModifier
 		if ($this->Country && $this->Order()->Status !== 'Cart') $country = $this->Country;
 		else if ($this->Order()->ShippingAddress()->exists()) $country = $this->Order()->ShippingAddress()->Country;
 		else if ($this->Order()->Member()->exists()) $country = $this->Order()->Member()->Country;
+
+		if (!$country) {
+			$locale = i18n::get_locale();
+			$zLocale = new Zend_Locale($locale);
+			$country = $zLocale->getRegion();
+		}
 
 		return $this->Country = $country;
 	}
