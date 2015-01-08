@@ -51,4 +51,20 @@ class InternationalShippingZone extends DataObject{
 		//fall back looking for default zone
 		return InternationalShippingZone::get()->filter('DefaultZone', 1)->first();
 	}
+
+	protected static $supported_countries;
+
+	public static function supported_countries() {
+		if (!isset(self::$supported_countries)) {
+			$countries = array();
+			$zones = InternationalShippingZone::get();
+			foreach ($zones as $zone) {
+				$countries = array_merge($countries, explode(',', $zone->ShippingCountries));
+			}
+			$countries[] = SiteConfig::current_site_config()->DomesticCountry;
+			self::$supported_countries = $countries;
+		}
+		return self::$supported_countries;
+	}
+
 } 
