@@ -164,6 +164,11 @@ class InternationalShippingCarrier extends DataObject{
 
 	public function distributeItem($item){
 		$product = $item->buyable();
+
+		if ($product instanceof ProductVariation) {
+			$product = $product->Product();
+		}
+
 		$productTypeArray = explode(',', $this->SupportedProductType);
 		if(in_array($product->ClassName, $productTypeArray)){
 			array_push($this->items, $item);
