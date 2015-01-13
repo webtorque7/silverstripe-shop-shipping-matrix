@@ -63,7 +63,7 @@ class ShippingMatrixModifier extends ShippingModifier
 		$this->ShippingType = $this->Order()->OrderShippingType;
 		$shippingCharge = 0;
 
-		if ($this->ShippingType !== 'free' && $this->ShippingType !== 'pickup') {
+		if ($this->ShippingType !== 'pickup') {
 			$address = $this->Order()->ShippingAddress();
 
 			if ($address->exists()) {
