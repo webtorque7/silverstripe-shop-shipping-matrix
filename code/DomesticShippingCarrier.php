@@ -84,11 +84,6 @@ class DomesticShippingCarrier extends DataObject{
 			}
 		}
 
-		//If the bottles of wine in the order is 12 or more then shipping is free
-		if($wineCount >= 12){
-			$freeShipping = true;
-		}
-
 		if($freeShipping == false){
 			if(!isset($region)){
 				$region = 'AUK';
@@ -105,6 +100,11 @@ class DomesticShippingCarrier extends DataObject{
 					array_push($carriers, $carrier->ID);
 				}
 			}
+		}
+
+		//If the bottles of wine in the order is 12 or more then shipping is free
+		if($wineCount >= 12){
+			$charge = 0;
 		}
 
 		return array('Amount' => $charge, 'Carriers' => $carriers);
