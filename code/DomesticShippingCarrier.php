@@ -67,43 +67,44 @@ class DomesticShippingCarrier extends DataObject{
 	}
 
 	public static function process($items, $region = null) {
-
-		$charge = 0;
-		$freeShipping = true;
-		$wineCount = 0;
 		$carriers = array();
 
-		//If order only contains events/gift vouchers then shipping is free
+		$charge = 0;
+		$wineCount = 0;
+		$applyShipping = false;
+
+		//If order contains anything other than events and vouchers shipping will apply
 		foreach ($items as $item) {
 			$product = $item->buyable();
 			if($product->ClassName != 'Event' && $product->ClassName != 'GiftVoucherProduct'){
-				$freeShipping = false;
+				$applyShipping = true;
 			}
 			if($product->ClassName == 'WineProduct'){
 				$wineCount += $item->Quantity;
 			}
 		}
 
-		if($freeShipping == false){
-			if(!isset($region)){
-				$region = 'AUK';
-			}
-			$regionObject = DomesticShippingRegion::get()->filter(array('Region' => $region))->first();
-			if($regionObject){
-				$charge = $regionObject->Amount;
-				$carrier = $regionObject->DomesticShippingCarriers()->first();
-				if($carrier){
-					foreach($carrier->DomesticShippingExtras() as $shippingExtra){
-						$charge += $shippingExtra->Amount;
-					}
+		//default region set to Auckland
+		if(!isset($region)){
+			$region = 'AUK';
+		}
 
-					array_push($carriers, $carrier->ID);
+		$regionObject = DomesticShippingRegion::get()->filter(array('Region' => $region))->first();
+
+		if($regionObject){
+			$charge = $regionObject->Amount;
+			$carrier = $regionObject->DomesticShippingCarriers()->first();
+			if($carrier){
+				foreach($carrier->DomesticShippingExtras() as $shippingExtra){
+					$charge += $shippingExtra->Amount;
 				}
+
+				array_push($carriers, $carrier->ID);
 			}
 		}
 
 		//If the bottles of wine in the order is 12 or more then shipping is free
-		if($wineCount >= 12){
+		if(!$applyShipping || $wineCount >= 12){
 			$charge = 0;
 		}
 
