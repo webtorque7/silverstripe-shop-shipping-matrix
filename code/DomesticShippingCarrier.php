@@ -85,7 +85,7 @@ class DomesticShippingCarrier extends DataObject{
 		}
 
 		//default region set to Auckland
-		if(!isset($region)){
+		if(!$region){
 			$region = 'AUK';
 		}
 
