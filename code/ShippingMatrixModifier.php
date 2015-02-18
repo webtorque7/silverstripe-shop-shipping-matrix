@@ -55,6 +55,25 @@ class ShippingMatrixModifier extends ShippingModifier
 //		}
 	}
 
+        //This needs to go through value even if order isnt in cart anymore.
+        public function modify($subtotal, $forcecalculation = false) {
+            $order = $this->Order();
+            $value = $this->value($subtotal);
+            switch($this->Type){
+                case "Chargable":
+                    $subtotal += $value;
+                    break;
+                case "Deductable":
+                    $subtotal -= $value;
+                    break;
+                case "Ignored":
+                    break;
+            }
+            $value = round($value, Order::config()->rounding_precision);
+            $this->Amount = $value;
+            return $subtotal;
+        }
+
 	public function ShowInTable() {
 		return true;
 	}
