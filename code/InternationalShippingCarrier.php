@@ -104,6 +104,7 @@ class InternationalShippingCarrier extends DataObject{
 			$product = $item->buyable();
 			$totalWeight += $product->Weight * $item->Quantity;
 		}
+
 		if($totalWeight > 0){
 			$weightRange = ShippingWeightRange::get()
 				->where($totalWeight . ' BETWEEN "MinWeight" AND "MaxWeight"')
@@ -213,7 +214,6 @@ class InternationalShippingCarrier extends DataObject{
 	}
 
 	public static function process($items, $country) {
-		$shippingZone = InternationalShippingZone::get_shipping_zone($country);
 		$carriers = InternationalShippingCarrier::get()->toArray();
 
 		$usedCarriers = array();
@@ -227,6 +227,7 @@ class InternationalShippingCarrier extends DataObject{
 		//get charge from each carrier
 		$charge = 0;
 		foreach ($carriers as $carrier) {
+                    $shippingZone = InternationalShippingZone::get_shipping_zone($country, $carrier);
 			if(!empty($shippingZone)){
 				$carrierCharge = $carrier->calculate($shippingZone);
 				if ($carrierCharge > 0) {

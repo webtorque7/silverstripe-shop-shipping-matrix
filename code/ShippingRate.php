@@ -44,7 +44,7 @@ class ShippingRate extends DataObject{
 			DropdownField::create(
 				'InternationalShippingZoneID',
 				'Shipping Zone',
-				InternationalShippingZone::get()->map('ID','Title')
+                                $this->InternationalShippingCarrier()->InternationalShippingZones()->map('ID','Title')
 			)
 		));
 		$fields->addFieldsToTab('Root.Main', array(

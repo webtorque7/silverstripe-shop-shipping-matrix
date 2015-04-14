@@ -38,11 +38,12 @@ class InternationalShippingZone extends DataObject{
 				'ShippingCountries',
 				'Shipping Countries',
 				SiteConfig::current_site_config()->getCountriesList()));
+$fields->addFieldToTab('Root.Main', new LiteralField('ID', $this->ID));
 		return $fields;
 	}
 
-	public static function get_shipping_zone($deliveryCountry) {
-		$shippingZones = InternationalShippingZone::get();
+	public static function get_shipping_zone($deliveryCountry, $carrier) {
+		$shippingZones = $carrier->InternationalShippingZones();
 		foreach ($shippingZones as $shippingZone) {
 			$countryArray = explode(",", $shippingZone->ShippingCountries);
 			if (in_array($deliveryCountry, $countryArray)) {
