@@ -139,7 +139,9 @@ class InternationalShippingCarrier extends DataObject{
 					Session::set('UsedCarriers', $carriers);
 				}
 
-				return $totalCharge;
+                                //GV requested a flat rate in GVB-63
+                                return $rate;
+//				return $totalCharge;
 			}
 			else{
 				return 0;
