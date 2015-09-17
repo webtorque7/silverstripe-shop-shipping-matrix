@@ -33,6 +33,9 @@ class ShippingRate extends DataObject{
 	}
 
 	public function getCMSFields(){
+            $fields = parent::getCMSFields();
+                $fields->removeByName('InternationalShippingZoneID');
+
                 $shippingZoneField = LiteralField::create('supportedzones', '<p>please save before choosing the shipping zone</p>');
                 if($this->InternationalShippingCarrierID > 0){
                     $shippingZoneField = DropdownField::create(
@@ -42,7 +45,6 @@ class ShippingRate extends DataObject{
                     );
                 }
 
-		$fields = parent::getCMSFields();
 		$fields->addFieldsToTab('Root.Main', array(
 			TextField::create('Title', 'Title'),
 			DropdownField::create(
