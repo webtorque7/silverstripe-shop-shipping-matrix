@@ -33,12 +33,13 @@ class ShippingRate extends DataObject{
 	}
 
 	public function getCMSFields(){
-                $shippingZones = array();
+                $shippingZoneField = LiteralField::create('supportedzones', '<p>please save before choosing the shipping zone</p>');
                 if($this->InternationalShippingCarrierID > 0){
-                    $shippingZones = $this->InternationalShippingCarrier()->InternationalShippingZones()->map('ID','Title');
-                }
-                else{
-                    $shippingZones = InternationalShippingZone::get()->map('ID','Title');
+                    $shippingZoneField = DropdownField::create(
+                        'InternationalShippingZoneID',
+                        'Shipping Zone',
+                        $this->InternationalShippingCarrier()->InternationalShippingZones()->map('ID','Title')
+                    );
                 }
 
 		$fields = parent::getCMSFields();
@@ -49,12 +50,11 @@ class ShippingRate extends DataObject{
 				'International Shipping Carrier',
 				InternationalShippingCarrier::get()->map('ID','Title')
 			),
-			DropdownField::create(
-				'InternationalShippingZoneID',
-				'Shipping Zone',
-                                $shippingZones
-			)
+                        $shippingZoneField
 		));
+
+
+
 		$fields->addFieldsToTab('Root.Main', array(
 			LiteralField::create('UnitHelper', 'Select a weight based range OR a quantity based range. Then specify the amount per unit selected'),
 			DropdownField::create(
