@@ -26,24 +26,21 @@ class ShippingMatrixModifier extends ShippingModifier
 	 * @param float $incoming the incoming running total.
 	 */
 	public function value($incoming) {
+		$this->loadCountry();
+		$this->loadRegion();
 
-		$this->calculate($this->Order());
+		$this->IsDomestic = self::is_domestic($this->Country);
+		$this->Amount = self::calculate($this->Region, $this->Country, $this->Order()->Items());
 
 		return $this->Amount;
 	}
 
-	public function calculate($order) {
-
+	public static function calculate($region, $country, $items) {
 		$shippingCharge = 0;
-		$this->loadCountry();
-		$this->loadRegion();
 
-		$config = SiteConfig::current_site_config();
+		if (!$country) return;
 
-		if (!$this->Country) return;
-
-		if ($this->Country == $config->DomesticCountry) {
-			$this->IsDomestic = true;
+		if (self::is_domestic($country)) {
 
 			$extraCosts = 0;
 			if ($extras = DomesticShippingExtra::get()) {
@@ -52,18 +49,16 @@ class ShippingMatrixModifier extends ShippingModifier
 				}
 			}
 
-			if ($this->Region) {
-				$region = DomesticShippingRegion::get()->filter('Region:PartialMatch', $this->Region)->first();
-				$shippingCharge = $region->Amount + $extraCosts;
+			if ($region) {
+				$shippingRegion = DomesticShippingRegion::get()->filter('Region:PartialMatch', $region)->first();
+				$shippingCharge = $shippingRegion->Amount + $extraCosts;
 			}
 		}
 		else {
-			$this->IsDomestic = false;
-			$items = $this->Order()->Items();
-			$shippingCharge = InternationalShippingCarrier::process($items, $this->Country);
+			$shippingCharge = InternationalShippingCarrier::process($items, $country);
 		}
 
-		$this->Amount = $shippingCharge;
+		return $shippingCharge;
 	}
 
 	public function loadCountry() {
@@ -93,31 +88,40 @@ class ShippingMatrixModifier extends ShippingModifier
 	}
 
 	public function ShowInTable() {
-		return $this->Amount() > 0;
+		return true;
 	}
 
 	public function TableTitle() {
 		if ($this->ShippingTitle) {
 			return $this->ShippingTitle;
-		} else {
-			//add region or country to title
-			$extra = '';
-			if ($this->IsDomestic && ($region = $this->loadRegion())) {
-				$extra = ' (' . $region . ')';
-			}
-			else if ($country = $this->loadCountry()) {
-				$extra = ' (' . _t('Countries.' . $country, ShopConfig::countryCode2name($country)) . ')';
-			}
-			return parent::TableTitle() . $extra;
 		}
+
+		return self::get_table_title($this->IsDomestic, $this->loadCountry(), $this->loadRegion());
+	}
+
+	public static function get_table_title($isDomestic, $country, $region = null) {
+		//add region or country to title
+		$extra = '';
+		if ($isDomestic && $region) {
+			$extra = ' (' . $region . ')';
+		}
+		else if ($country) {
+			$extra = ' (' . _t('Countries.' . $country, ShopConfig::countryCode2name($country)) . ')';
+		}
+
+		return singleton('ShippingMatrixModifier')->i18n_singular_name() . $extra;
+	}
+
+	public static function is_domestic($country) {
+		return SiteConfig::current_site_config()->DomesticCountry === $country;
 	}
 
 	public static function get_shipping_countries() {
 		$cache = SS_Cache::factory('Countries', 'Output', array('automatic_serialization' => true));
 
 		if (!($countries = $cache->load('deliveryCountry'))) {
-			$defultZone = InternationalShippingZone::get()->filter('DefaultZone', true)->first();
-			if (!empty($defultZone)) {
+			$defaultZone = InternationalShippingZone::get()->filter('DefaultZone', true)->first();
+			if (!empty($defaultZone)) {
 				$countries = ShopConfig::$iso_3166_countryCodes;
 			} else {
 				$countries = array();

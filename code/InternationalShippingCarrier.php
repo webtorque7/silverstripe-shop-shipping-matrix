@@ -150,7 +150,7 @@ class InternationalShippingCarrier extends DataObject{
 				$quantityCharge = $totalQuantity * $rate;
 			}
 			else{
-				throw new Exception('The total quantity of the items exceeds the maximum quantity of our couriers,
+				throw new ShippingMatrixException('The total quantity of the items exceeds the maximum quantity of our couriers,
 					please contact us to explore other shipping methods.');
 			}
 			return $quantityCharge;
