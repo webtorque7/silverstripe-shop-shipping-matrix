@@ -103,15 +103,16 @@ class InternationalShippingCarrier extends DataObject{
 		}
 
 		if($totalWeight > 0){
-			$weightRange = ShippingWeightRange::get()
-				->where($totalWeight . ' BETWEEN "MinWeight" AND "MaxWeight"');
+//			$weightRange = ShippingWeightRange::get()
+//				->where($totalWeight . ' BETWEEN "MinWeight" AND "MaxWeight"');
 
-			$weightRangeID = $weightRange->first()->ID;
+//			$weightRangeID = $weightRange->first()->ID;
 			$weightRate = ShippingRate::get()
 				->leftJoin('InternationalShippingCarrier',
 					'"InternationalShippingCarrier"."ID" = "ShippingRate"."InternationalShippingCarrierID"')
-				->where('"InternationalShippingZoneID" = ' . $zone->ID . '
-				AND "ShippingWeightRangeID" = ' . $weightRangeID)
+				->leftJoin('ShippingWeightRange', '"ShippingWeightRange"."ID" = "ShippingRate"."ShippingWeightRangeID"')
+				->where(sprintf('"InternationalShippingZoneID" = ' . $zone->ID . '
+				AND "ShippingWeightRange"."MinWeight" <= %s AND "ShippingWeightRange"."MaxWeight" > %s', $totalWeight, $totalWeight))
 				->first();
 
 			if(!empty($weightRate)){
