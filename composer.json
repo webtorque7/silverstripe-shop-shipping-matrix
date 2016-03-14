@@ -1,0 +1,15 @@
+{
+    "name": "webtorque/shipping-matrix",
+    "description": "Shipping matrix module for Silvershop",
+    "type": "silverstripe-module",
+    "require": {
+        "silverstripe/framework": "3.*"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Conrad",
+            "email": "conrad@webtorque.co.nz"
+        }
+    ]
+}
