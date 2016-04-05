@@ -144,7 +144,7 @@ class InternationalShippingCarrier extends DataObject{
 					'"InternationalShippingCarrier"."ID" = "ShippingRate"."InternationalShippingCarrierID"')
 				->where('"InternationalShippingZoneID" = ' . $zone->ID . '
 					AND "ShippingQuantityRangeID" = ' . $quantityRangeID)
-				->first()->AmountPerUnit;
+				->first();
 
 			if(!empty($quantityRate)){
 				$rate = $quantityRate->AmountPerUnit;
