@@ -30,32 +30,34 @@ class ShippingMatrixModifier extends ShippingModifier
 		$this->loadRegion();
 
 		$this->IsDomestic = self::is_domestic($this->Country);
-		$this->Amount = self::calculate($this->Region, $this->Country, $this->Order()->Items());
+		$this->Amount = self::calculate($this->Region, $this->Country, $this->Order()->Items(), $this->Order());
+
+		$this->extend('updateValue');
 
 		return $this->Amount;
 	}
 
-	public static function calculate($region, $country, $items) {
+	public static function calculate($region, $country, $items, Order $order = null) {
 		$shippingCharge = 0;
 
 		if (!$country) return;
 
 		if (self::is_domestic($country)) {
 
-			$extraCosts = 0;
-			if ($extras = DomesticShippingExtra::get()) {
-				foreach ($extras as $extra) {
-					$extraCosts += $extra->Amount;
-				}
-			}
-
-			if ($region) {
-				$shippingRegion = DomesticShippingRegion::get()->filter('Region:PartialMatch', $region)->first();
-				$shippingCharge = $shippingRegion->Amount + $extraCosts;
+			$info = DomesticShippingCarrier::process($items);
+			$shippingCharge = $info['Amount'];
+			if ($order) {
+				$order->DomesticCarriers()->removeAll();
+				$order->DomesticCarriers()->addMany($info['Carriers']);
 			}
 		}
 		else {
-			$shippingCharge = InternationalShippingCarrier::process($items, $country);
+			$info = InternationalShippingCarrier::process($items, $country);
+			$shippingCharge = $info['Amount'];
+			if ($order) {
+				$order->InternationalCarriers()->removeAll();
+				$order->InternationalCarriers()->addMany($info['Carriers']);
+			}
 		}
 
 		return $shippingCharge;
@@ -134,7 +136,14 @@ class ShippingMatrixModifier extends ShippingModifier
 			$cache->save($countries);
 		}
 		return $countries;
+	}
 
+	public function modify($subtotal, $forcecalculation = false)
+	{
+		$subtotal = parent::modify($subtotal, $forcecalculation);
 
+		$this->extend('modify', $subtotal, $forcecalculation);
+
+		return $subtotal;
 	}
 }

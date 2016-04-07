@@ -98,7 +98,7 @@ class InternationalShippingCarrier extends DataObject{
 		}
 
 		//round up to nearest weight
-		if (SiteConfig::current_site_config()->RoundUpWeight) {
+		if (ShippingMatrixConfig::current_config()->RoundUpWeight) {
 			$totalWeight = ceil($totalWeight);
 		}
 
@@ -207,6 +207,7 @@ class InternationalShippingCarrier extends DataObject{
 				$charge += $carrier->calculate($shippingZone);
 			}
 		}
-		return $charge;
+
+		return array('Amount' => $charge, 'Carriers' => $carriers);
 	}
 }
