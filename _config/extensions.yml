@@ -3,6 +3,6 @@ Name: shippingextensions
 Order:
   extensions:
     - ShippingMatrixOrderExtension
-SiteConfig:
+StoreShop:
   extensions:
     - ShippingMatrixConfig
