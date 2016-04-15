@@ -11,5 +11,5 @@ class StoreShippingConfig extends ShippingMatrix
     private static $singular_name = 'Store Shipping setting';
     private static $plural_name = 'Store Shipping settings';
 
-  //TODO move all shop specific configs from ShippingMatrix to here.
+    //TODO move all shop specific configs from ShippingMatrix to here.
 }

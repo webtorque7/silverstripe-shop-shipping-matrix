@@ -159,4 +159,23 @@ class ShippingMatrix extends DataObject
         }
         return null;
     }
+
+    public function requireDefaultRecords()
+    {
+        parent::requireDefaultRecords();
+        if (!DataObject::get_one('ShippingMatrix')) {
+            $matrix = ShippingMatrix::create();
+            $matrix->write();
+        }
+    }
+
+    public function canDelete($member = null)
+    {
+        return false;
+    }
+
+    public function canCreate($member = null)
+    {
+        return !DataObject::get_one('ShippingMatrix');
+    }
 } 
