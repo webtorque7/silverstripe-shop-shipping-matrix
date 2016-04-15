@@ -6,7 +6,7 @@
  * Date: 06/11/13
  * Time: 15:41
  */
-class ShippingMatrix extends DataObject
+class ShippingMatrixConfig extends DataObject
 {
     private static $singular_name = 'Global Shipping setting';
     private static $plural_name = 'Global Shipping settings';
@@ -49,18 +49,22 @@ class ShippingMatrix extends DataObject
         ));
 
         $fields->addFieldsToTab('Root.Settings', array(
-            DropdownField::create("DomesticCountry", _t('ShippingMatrix.DOMESTICCOUNTRY', 'Domestic Country'),
-                $this->owner->getCountriesList(), 'NZ'),
-            DropdownField::create("DefaultDomesticRegion",
-                _t('ShippingMatrix.DEFAULTDOMESTICREGION', 'Default Domestic Region'),
-                DomesticShippingRegion::get()->map()),
+            DropdownField::create(
+                'DomesticCountry',
+                'Domestic Country',
+                $this->getCountriesList(),
+                'NZ'
+            ),
+            DropdownField::create(
+                'DefaultDomesticRegion',
+                'Default Domestic Region',
+                DomesticShippingRegion::get()->map()
+            ),
             TextField::create('FreeShippingQuantity', 'Free Shipping Quantity'),
             CheckboxField::create('AllowPickup', 'Allow Pickup'),
-            CheckboxField::create('RoundUpWeight', 'Round up weight')
-                ->setDescription('Round up weight to the nearest kg'),
+            CheckboxField::create('RoundUpWeight', 'Round up weight')->setDescription('Round up weight to the nearest kg'),
             HtmlEditorField::create('ShippingMessage', 'Shipping Message')->setRows(20),
-            HtmlEditorField::create('InternationalShippingWarningMessage',
-                'International Shipping Warning Message')->setRows(20)
+            HtmlEditorField::create('InternationalShippingWarningMessage', 'International Shipping Warning Message')->setRows(20)
         ));
 
         $fields->addFieldsToTab('Root.DomesticShippingCarrier', array(
@@ -97,25 +101,44 @@ class ShippingMatrix extends DataObject
         ));
 
         $fields->addFieldsToTab('Root.AllowedCountries', array(
-            CheckboxSetField::create('AllowedCountries', 'Allowed Ordering and Shipping Countries', ShopConfig::config()->iso_3166_country_codes)
+            CheckboxSetField::create('AllowedCountries', 'Allowed Ordering and Shipping Countries', $this->config()->iso_3166_country_codes)
         ));
 
         $this->extend('updateCMSFields', $fields);
         return $fields;
     }
 
+    public function requireDefaultRecords()
+    {
+        parent::requireDefaultRecords();
+        if (!DataObject::get_one('ShippingMatrixConfig')) {
+            $matrix = ShippingMatrixConfig::create();
+            $matrix->write();
+        }
+    }
+
+    public function canDelete($member = null)
+    {
+        return false;
+    }
+
+    public function canCreate($member = null)
+    {
+        return !DataObject::get_one('ShippingMatrixConfig');
+    }
+
     public static function current_config()
     {
         if (class_exists('Fluent') && class_exists('ShopStore')) {
             $locale = Fluent::current_locale();
-            $country = array_search($locale, ShopStore::config()->country_locale_mapping);
+            $country = array_search($locale, self::config()->country_locale_mapping);
             $store = ShopStore::get()->filter(array('Country' => $country))->first();
             if ($store->exists()) {
-                return $store;
+                return StoreShippingMatrixConfig::get()->byID($store->ShippingConfigID);
             }
         }
 
-        return SiteConfig::current_site_config();
+        return DataObject::get_one('ShippingMatrixConfig');
     }
 
     /**
@@ -125,7 +148,7 @@ class ShippingMatrix extends DataObject
      */
     public function getCountriesList($prefixisocode = false)
     {
-        $countries = ShopConfig::config()->iso_3166_country_codes;
+        $countries = $this->config()->iso_3166_country_codes;
         asort($countries);
         if ($allowed = $this->owner->AllowedCountries) {
             $allowed = explode(",", $allowed);
@@ -158,24 +181,5 @@ class ShippingMatrix extends DataObject
             }
         }
         return null;
-    }
-
-    public function requireDefaultRecords()
-    {
-        parent::requireDefaultRecords();
-        if (!DataObject::get_one('ShippingMatrix')) {
-            $matrix = ShippingMatrix::create();
-            $matrix->write();
-        }
-    }
-
-    public function canDelete($member = null)
-    {
-        return false;
-    }
-
-    public function canCreate($member = null)
-    {
-        return !DataObject::get_one('ShippingMatrix');
     }
 } 
