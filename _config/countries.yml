@@ -1,7 +1,7 @@
 ---
 Name: countries
 ---
-ShippingMatrix:
+ShippingMatrixConfig:
   iso_3166_country_codes:
     'AF' : "Afghanistan",
     'AX' : "Åland Islands",

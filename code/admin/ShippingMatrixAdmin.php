@@ -18,7 +18,7 @@ class ShippingMatrixAdmin extends ModelAdmin
         foreach ($form->Fields()->dataFields() as $field) {
             if (method_exists($field, 'getModelClass') && singleton($field->getModelClass())->ClassName == 'ShippingMatrixConfig') {
                 $object = DataObject::get_one('ShippingMatrixConfig');
-                if ($object->exists()) {
+                if ($object && $object->exists()) {
                     $fields = $object->getCMSFields();
                     $actions = $object->getCMSActions();
                     $form = CMSForm::create($this, 'ShippingMatrixConfig', $fields, $actions);

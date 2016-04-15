@@ -133,7 +133,7 @@ class ShippingMatrixConfig extends DataObject
             $locale = Fluent::current_locale();
             $country = array_search($locale, self::config()->country_locale_mapping);
             $store = ShopStore::get()->filter(array('Country' => $country))->first();
-            if ($store->exists()) {
+            if ($store && $store->exists()) {
                 return StoreShippingMatrixConfig::get()->byID($store->ShippingConfigID);
             }
         }
