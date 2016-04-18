@@ -35,17 +35,7 @@ class ShippingMatrixConfig extends DataObject
     {
         $fields = parent::getCMSFields();
         $fields->removeByName(array(
-            'Main',
-            'DomesticCountry',
-            'LocalCity',
-            'ShippingMargin',
-            'ShippingMessage',
-            'AllowPickup',
-            'RoundUpWeight',
-            'FreeShippingQuantity',
-            'InternationalShippingWarningMessage',
-            'AllowedCountries',
-            'DefaultDomesticRegionID',
+            'Main'
         ));
 
         $fields->addFieldsToTab('Root.Settings', array(
