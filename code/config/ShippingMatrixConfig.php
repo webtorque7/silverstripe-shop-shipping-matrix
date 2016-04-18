@@ -127,14 +127,14 @@ class ShippingMatrixConfig extends DataObject
         return !DataObject::get_one('ShippingMatrixConfig');
     }
 
-    public static function current_config()
+    public static function current()
     {
         if (class_exists('Fluent') && class_exists('ShopStore')) {
             $locale = Fluent::current_locale();
             $country = array_search($locale, self::config()->country_locale_mapping);
             $store = ShopStore::get()->filter(array('Country' => $country))->first();
             if ($store && $store->exists()) {
-                return StoreShippingMatrixConfig::get()->byID($store->ShippingConfigID);
+                return StoreShippingMatrixConfig::get()->filter(array('Country' => $store->Country))->first();
             }
         }
 
