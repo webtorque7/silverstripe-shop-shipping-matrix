@@ -119,10 +119,8 @@ class ShippingMatrixConfig extends DataObject
 
     public static function current()
     {
-        if (class_exists('Fluent') && class_exists('ShopStore')) {
-            $locale = Fluent::current_locale();
-            $country = array_search($locale, self::config()->country_locale_mapping);
-            $store = ShopStore::get()->filter(array('Country' => $country))->first();
+        if (class_exists('ShopStore')) {
+            $store = ShopStore::current_store();
             if ($store && $store->exists()) {
                 return StoreShippingMatrixConfig::get()->filter(array('Country' => $store->Country))->first();
             }
