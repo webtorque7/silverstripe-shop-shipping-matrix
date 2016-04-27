@@ -12,17 +12,17 @@ class StoreShippingMatrixConfig extends ShippingMatrixConfig
     private static $plural_name = 'Store Shipping settings';
 
     private static $db = array(
-        'Country' => 'Varchar'
+        'ShopStoreID' => 'Int',
     );
 
     private static $summary_fields = array(
-        'Country' => 'Country'
+        'ShopStoreID' => 'Shop Store ID'
     );
 
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
-        $fields->removeByName('Country');
+        $fields->removeByName('ShopStoreID');
         return $fields;
     }
 
@@ -34,5 +34,15 @@ class StoreShippingMatrixConfig extends ShippingMatrixConfig
     public function canCreate($member = null)
     {
         return false;
+    }
+
+    public static function current()
+    {
+        $store = ShopConfig::current();
+        if ($store && $store->ClassName == 'ShopStore') {
+            return StoreShippingMatrixConfig::get()->filter(array('ShopStoreID' => $store->ID))->first();
+        }
+
+        return DataObject::get_one('ShippingMatrixConfig');
     }
 }

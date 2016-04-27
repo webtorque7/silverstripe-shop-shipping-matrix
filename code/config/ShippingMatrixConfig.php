@@ -117,18 +117,6 @@ class ShippingMatrixConfig extends DataObject
         return !DataObject::get_one('ShippingMatrixConfig');
     }
 
-    public static function current()
-    {
-        if (class_exists('ShopStore')) {
-            $store = ShopStore::current_store();
-            if ($store && $store->exists()) {
-                return StoreShippingMatrixConfig::get()->filter(array('Country' => $store->Country))->first();
-            }
-        }
-
-        return DataObject::get_one('ShippingMatrixConfig');
-    }
-
     /**
      * Carried over from SilverShop's Shop Config
      * @param bool|false $prefixisocode
