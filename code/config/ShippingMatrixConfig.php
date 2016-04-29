@@ -20,7 +20,10 @@ class ShippingMatrixConfig extends DataObject
         'RoundUpWeight' => 'Boolean',
         'FreeShippingQuantity' => 'Int',
         'InternationalShippingWarningMessage' => 'HTMLText',
-        'AllowedCountries' => 'Text'
+		'FreeShippingText' => 'Varchar(200)',
+		'DomesticShippingText' => 'Varchar(200)',
+		'InternationalShippingText' => 'HTMLText',
+		'PickupText' => 'Varchar(200)'
     );
 
     private static $has_one = array(
@@ -50,9 +53,13 @@ class ShippingMatrixConfig extends DataObject
                 'Default Domestic Region',
                 DomesticShippingRegion::get()->map()
             ),
-            TextField::create('FreeShippingQuantity', 'Free Shipping Quantity'),
             CheckboxField::create('AllowPickup', 'Allow Pickup'),
             CheckboxField::create('RoundUpWeight', 'Round up weight')->setDescription('Round up weight to the nearest kg'),
+            TextField::create('FreeShippingQuantity', 'Free Shipping Quantity'),
+            TextField::create('FreeShippingText', 'Free Shipping Text'),
+            TextField::create('DomesticShippingText', 'Domestic Shipping Text'),
+            TextField::create('PickupText', 'Pickup Text'),
+            HtmlEditorField::create('InternationalShippingText', 'International Shipping Text'),
             HtmlEditorField::create('ShippingMessage', 'Shipping Message')->setRows(20),
             HtmlEditorField::create('InternationalShippingWarningMessage', 'International Shipping Warning Message')->setRows(20)
         ));
@@ -90,10 +97,6 @@ class ShippingMatrixConfig extends DataObject
             )
         ));
 
-        $fields->addFieldsToTab('Root.AllowedCountries', array(
-            CheckboxSetField::create('AllowedCountries', 'Allowed Ordering and Shipping Countries', $this->config()->iso_3166_country_codes)
-        ));
-
         $this->extend('updateCMSFields', $fields);
         return $fields;
     }
@@ -115,47 +118,5 @@ class ShippingMatrixConfig extends DataObject
     public function canCreate($member = null)
     {
         return !DataObject::get_one('ShippingMatrixConfig');
-    }
-
-    /**
-     * Carried over from SilverShop's Shop Config
-     * @param bool|false $prefixisocode
-     * @return array|scalar
-     */
-    public function getCountriesList($prefixisocode = false)
-    {
-        $countries = $this->config()->iso_3166_country_codes;
-        asort($countries);
-        if ($allowed = $this->owner->AllowedCountries) {
-            $allowed = explode(",", $allowed);
-            if (count($allowed > 0)) {
-                $countries = array_intersect_key($countries, array_flip($allowed));
-            }
-        }
-        if ($prefixisocode) {
-            foreach ($countries as $key => $value) {
-                $countries[$key] = "$key - $value";
-            }
-        }
-        return $countries;
-    }
-
-    /**
-     * Carried over from SilverShop's Shop Config
-     * @param bool|false $fullname
-     * @return mixed|null
-     */
-    public function getSingleCountry($fullname = false)
-    {
-        $countries = $this->owner->getCountriesList();
-        if (count($countries) == 1) {
-            if ($fullname) {
-                return array_pop($countries);
-            } else {
-                reset($countries);
-                return key($countries);
-            }
-        }
-        return null;
     }
 } 
