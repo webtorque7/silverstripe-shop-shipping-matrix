@@ -12,23 +12,25 @@ class StoreShippingMatrixConfig extends ShippingMatrixConfig
     private static $plural_name = 'Store Shipping settings';
 
     private static $db = array(
+        'Title' => 'Varchar(200)',
         'ShopStoreID' => 'Int',
     );
 
     private static $summary_fields = array(
-        'ShopStoreID' => 'Shop Store ID'
+        'Title' => 'Title'
     );
 
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
         $fields->removeByName('ShopStoreID');
+        $fields->addFieldToTab('Root.Settings', TextField::create('Title', 'Store Shipping Matrix'));
         return $fields;
     }
 
     public function canDelete($member = null)
     {
-        return false;
+        return Director::isLive() ? false : true;
     }
 
     public function canCreate($member = null)
