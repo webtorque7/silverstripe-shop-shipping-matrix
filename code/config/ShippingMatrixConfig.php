@@ -45,7 +45,7 @@ class ShippingMatrixConfig extends DataObject
             DropdownField::create(
                 'DomesticCountry',
                 'Domestic Country',
-                $this->getCountriesList(),
+                SiteConfig::current_site_config()->getCountriesList(),
                 'NZ'
             ),
             DropdownField::create(

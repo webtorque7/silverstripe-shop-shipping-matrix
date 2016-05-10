@@ -20,14 +20,6 @@ class StoreShippingMatrixConfig extends ShippingMatrixConfig
         'Title' => 'Title'
     );
 
-    public function getCMSFields()
-    {
-        $fields = parent::getCMSFields();
-        $fields->removeByName('ShopStoreID');
-        $fields->addFieldToTab('Root.Settings', TextField::create('Title', 'Store Shipping Matrix'));
-        return $fields;
-    }
-
     public function canDelete($member = null)
     {
         return Director::isLive() ? false : true;
