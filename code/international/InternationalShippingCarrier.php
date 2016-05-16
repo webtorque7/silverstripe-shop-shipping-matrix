@@ -28,6 +28,12 @@ class InternationalShippingCarrier extends DataObject{
 		'ShippingQuantityRanges' => 'ShippingQuantityRange'
 	);
 
+	public function getTrackingLink($order)
+	{
+		//todo
+		return false;
+	}
+
 	protected $items = array();
 
 	public function getCMSFields(){
