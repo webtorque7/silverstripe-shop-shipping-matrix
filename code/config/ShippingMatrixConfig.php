@@ -6,7 +6,7 @@
  * Date: 06/11/13
  * Time: 15:41
  */
-class ShippingMatrixConfig extends DataObject
+class ShippingMatrixConfig extends DataExtension
 {
     private static $singular_name = 'Global Shipping setting';
     private static $plural_name = 'Global Shipping settings';
@@ -20,10 +20,10 @@ class ShippingMatrixConfig extends DataObject
         'RoundUpWeight' => 'Boolean',
         'FreeShippingQuantity' => 'Int',
         'InternationalShippingWarningMessage' => 'HTMLText',
-		'FreeShippingText' => 'Varchar(200)',
-		'DomesticShippingText' => 'Varchar(200)',
-		'InternationalShippingText' => 'HTMLText',
-		'PickupText' => 'Varchar(200)'
+        'FreeShippingText' => 'Varchar(200)',
+        'DomesticShippingText' => 'Varchar(200)',
+        'InternationalShippingText' => 'HTMLText',
+        'PickupText' => 'Varchar(200)'
     );
 
     private static $has_one = array(
@@ -34,13 +34,9 @@ class ShippingMatrixConfig extends DataObject
         'RoundUpWeight' => true
     );
 
-    public function getCMSFields()
+    public function updateCMSFields(FieldList $fields)
     {
-        $fields = parent::getCMSFields();
-        $fields->removeByName(array(
-            'Main'
-        ));
-
+        $fields->removeByName('Main');
         $fields->addFieldsToTab('Root.Settings', array(
             DropdownField::create(
                 'DomesticCountry',
@@ -54,14 +50,16 @@ class ShippingMatrixConfig extends DataObject
                 DomesticShippingRegion::get()->map()
             ),
             CheckboxField::create('AllowPickup', 'Allow Pickup'),
-            CheckboxField::create('RoundUpWeight', 'Round up weight')->setDescription('Round up weight to the nearest kg'),
+            CheckboxField::create('RoundUpWeight', 'Round up weight')
+                ->setDescription('Round up weight to the nearest kg'),
             TextField::create('FreeShippingQuantity', 'Free Shipping Quantity'),
             TextField::create('FreeShippingText', 'Free Shipping Text'),
             TextField::create('DomesticShippingText', 'Domestic Shipping Text'),
             TextField::create('PickupText', 'Pickup Text'),
             HtmlEditorField::create('InternationalShippingText', 'International Shipping Text'),
             HtmlEditorField::create('ShippingMessage', 'Shipping Message')->setRows(20),
-            HtmlEditorField::create('InternationalShippingWarningMessage', 'International Shipping Warning Message')->setRows(20)
+            HtmlEditorField::create('InternationalShippingWarningMessage',
+                'International Shipping Warning Message')->setRows(20)
         ));
 
         $fields->addFieldsToTab('Root.DomesticShippingCarrier', array(
@@ -96,18 +94,6 @@ class ShippingMatrixConfig extends DataObject
                 GridFieldConfig_RecordEditor::create()->addComponent(GridFieldOrderableRows::create('Sort'))
             )
         ));
-
-        $this->extend('updateCMSFields', $fields);
-        return $fields;
-    }
-
-    public function requireDefaultRecords()
-    {
-        parent::requireDefaultRecords();
-        if (!DataObject::get_one('ShippingMatrixConfig')) {
-            $matrix = ShippingMatrixConfig::create();
-            $matrix->write();
-        }
     }
 
     public function canDelete($member = null)
@@ -115,8 +101,9 @@ class ShippingMatrixConfig extends DataObject
         return false;
     }
 
-    public function canCreate($member = null)
+    public static function current()
     {
-        return !DataObject::get_one('ShippingMatrixConfig');
+        $class = self::config()->config_class;
+        return $class::current();
     }
 } 
