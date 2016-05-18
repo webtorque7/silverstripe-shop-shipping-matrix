@@ -119,7 +119,7 @@ class ShippingMatrixConfig extends DataExtension
 
     public static function current()
     {
-        $class = self::config()->config_class;
+        $class = Config::inst()->get('ShippingMatrixConfig', 'config_class');
         return $class::current();
     }
 } 
