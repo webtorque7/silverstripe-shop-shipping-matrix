@@ -29,11 +29,9 @@ class ShippingMatrixModifier extends ShippingModifier
 		$this->loadCountry();
 		$this->loadRegion();
 
-		$this->IsDomestic = self::is_domestic($this->Country);
 		$this->Amount = self::calculate($this->Region, $this->Country, $this->Order()->Items(), $this->Order());
 
 		$this->extend('updateValue');
-
 		return $this->Amount;
 	}
 
@@ -76,6 +74,7 @@ class ShippingMatrixModifier extends ShippingModifier
 			$country = $zLocale->getRegion();
 		}
 
+		$this->IsDomestic = self::is_domestic($country);
 		return $this->Country = $country;
 	}
 
@@ -89,8 +88,9 @@ class ShippingMatrixModifier extends ShippingModifier
 		return $this->Region = $region;
 	}
 
-	public function ShowInTable() {
-		return true;
+	public static function is_domestic($country) {
+		$config = ShippingMatrixConfig::current();
+		return $config->Country === $country;
 	}
 
 	public function TableTitle() {
@@ -98,7 +98,7 @@ class ShippingMatrixModifier extends ShippingModifier
 			return $this->ShippingTitle;
 		}
 
-		return self::get_table_title($this->IsDomestic, $this->loadCountry(), $this->loadRegion());
+		return $this->ShippingTitle = self::get_table_title($this->IsDomestic, $this->loadCountry(), $this->loadRegion());
 	}
 
 	public static function get_table_title($isDomestic, $country, $region = null) {
@@ -112,10 +112,6 @@ class ShippingMatrixModifier extends ShippingModifier
 		}
 
 		return singleton('ShippingMatrixModifier')->i18n_singular_name() . $extra;
-	}
-
-	public static function is_domestic($country) {
-		return SiteConfig::current_site_config()->DomesticCountry === $country;
 	}
 
 	public static function get_shipping_countries() {
