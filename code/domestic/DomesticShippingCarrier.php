@@ -27,11 +27,12 @@ class DomesticShippingCarrier extends DataObject
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
-        $fields->removeByName('Sort');
-        $fields->removeByName('DomesticShippingRegions');
-        $fields->removeByName('DomesticShippingExtras');
+        $fields->removeByName(array(
+            'Sort',
+            'DomesticShippingRegions',
+            'DomesticShippingExtras'
+        ));
 
-        //find tracker classes
         $trackerClasses = ClassInfo::implementorsOf('TrackingLinkGeneratorInterface');
         $trackers = array();
 
@@ -41,24 +42,22 @@ class DomesticShippingCarrier extends DataObject
             }
         }
 
-        $shippingRegionGrid = GridField::create(
-            'DomesticShippingRegions',
-            'Domestic Shipping Regions',
-            $this->DomesticShippingRegions(),
-            GridFieldConfig_RelationEditor::create()
-                ->addComponent(GridFieldOrderableRows::create('Sort')));
-
-        $shippingExtraGrid = GridField::create(
-            'DomesticShippingExtras',
-            'Domestic Shipping Extras',
-            $this->DomesticShippingExtras(),
-            GridFieldConfig_RelationEditor::create()
-                ->addComponent(GridFieldOrderableRows::create('Sort')));
-
         $fields->addFieldsToTab('Root.Main', array(
             DropdownField::create('TrackerType', 'Tracker Type', $trackers),
-            $shippingRegionGrid,
-            $shippingExtraGrid
+            GridField::create(
+                'DomesticShippingRegions',
+                'Domestic Shipping Regions',
+                $this->DomesticShippingRegions(),
+                GridFieldConfig_RelationEditor::create()
+                    ->addComponent(GridFieldOrderableRows::create('Sort'))
+            ),
+            GridField::create(
+                'DomesticShippingExtras',
+                'Domestic Shipping Extras',
+                $this->DomesticShippingExtras(),
+                GridFieldConfig_RelationEditor::create()
+                    ->addComponent(GridFieldOrderableRows::create('Sort'))
+            )
         ));
 
         return $fields;
@@ -84,10 +83,6 @@ class DomesticShippingCarrier extends DataObject
         if ($region) {
             $shippingRegion = DomesticShippingRegion::get()->filter('Region:PartialMatch', $region)->first();
 
-            if (!$shippingRegion) {
-                $shippingRegion = ShippingMatrixConfig::current_config()->DefaultDomesticRegion();
-            }
-
             if ($shippingRegion) {
                 $shippingCharge = $shippingRegion->Amount + $extraCosts;
                 $carriers[] = $shippingRegion->DomesticShippingCarrier();
@@ -95,7 +90,6 @@ class DomesticShippingCarrier extends DataObject
         }
 
         singleton('DomesticShippingCarrier')->extend('updateShippingCharge', $shippingCharge, $carriers, $items);
-
         return array('Amount' => $shippingCharge, 'Carriers' => $carriers);
     }
 }

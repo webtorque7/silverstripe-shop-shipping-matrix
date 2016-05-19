@@ -14,16 +14,6 @@ class DomesticShippingRegion extends DataObject{
 		'Amount' => 'Currency'
 	);
 
-	/**
-	 * DomesticShippingCarriers is deprecated, should use DomesticShippingCarrier, region can only
-	 * belong to on carrier or there is no way to lookup carrier from the region
-	 *
-	 * @var array
-	 */
-//	private static $belongs_many_many = array(
-//		'DomesticShippingCarriers' => 'DomesticShippingCarrier'
-//	);
-
 	private static $has_one = array(
 		'DomesticShippingCarrier' => 'DomesticShippingCarrier'
 	);
@@ -36,8 +26,10 @@ class DomesticShippingRegion extends DataObject{
 
 	public function getCMSFields(){
 		$fields = parent::getCMSFields();
-		$fields->removeByName('Sort');
-		$fields->removeByName('DomesticShippingCarriers');
+		$fields->removeByName(array(
+			'Sort',
+			'DomesticShippingCarriers'
+		));
 
 		$region = singleton('Address')->getRegionList();
 
@@ -46,23 +38,7 @@ class DomesticShippingRegion extends DataObject{
 			CheckboxSetField::create('Region', 'Region', $region),
 			TextField::create('Amount', 'Amount')
 		));
+
 		return $fields;
-	}
-
-	public function requireDefaultRecords()
-	{
-		parent::requireDefaultRecords();
-
-		//move DomesticShippingCarriers into a has_one
-		foreach (DomesticShippingRegion::get() as $region) {
-			$carrier = DB::query("SELECT DomesticShippingCarrierID from DomesticShippingCarrier_DomesticShippingRegions WHERE DomesticShippingRegionID = {$region->ID}")->value();
-
-			if ($carrier) {
-				$region->DomesticShippingCarrierID = $carrier;
-
-				//delete old records
-				DB::query("DELETE FROM DomesticShippingCarrier_DomesticShippingRegions WHERE DomesticShippingRegionID = {$region->ID}");
-			}
-		}
 	}
 }

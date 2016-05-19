@@ -2,17 +2,17 @@
 
 /**
  * Created by PhpStorm.
- * User: User
- * Date: 30/05/14
- * Time: 8:39 AM
+ * User: davis
+ * Date: 06/11/13
+ * Time: 14:21
  */
-class ShippingQuantityRange extends DataObject
+class ShippingWeightRange extends DataObject
 {
     private static $db = array(
         'Title' => 'Varchar(100)',
         'Sort' => 'Int',
-        'MinQuantity' => 'Int',
-        'MaxQuantity' => 'Int'
+        'MinWeight' => 'Decimal',
+        'MaxWeight' => 'Decimal'
     );
 
     private static $belongs_many_many = array(
@@ -25,8 +25,8 @@ class ShippingQuantityRange extends DataObject
 
     private static $summary_fields = array(
         'Title' => 'Title',
-        'MinQuantity' => 'Minimum Quantity',
-        'MaxQuantity' => 'Maximum Quantity'
+        'MinWeight' => 'Minimum Weight(kg)',
+        'MaxWeight' => 'Maximum Weight(kg)'
     );
 
     public function getCMSFields()
@@ -39,11 +39,10 @@ class ShippingQuantityRange extends DataObject
         ));
 
         $fields->addFieldsToTab('Root.Main', array(
-                TextField::create('MinQuantity', 'Minimum Quantity'),
-                TextField::create('MaxQuantity', 'Maximum Quantity')
-            )
-        );
+            TextField::create('MinWeight', 'Minimum Weight(kg)'),
+            TextField::create('MaxWeight', 'Maximum Weight(kg)')
+        ));
 
         return $fields;
     }
-}
+} 
