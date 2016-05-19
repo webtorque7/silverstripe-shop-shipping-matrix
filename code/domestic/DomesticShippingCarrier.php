@@ -11,6 +11,10 @@ class DomesticShippingCarrier extends DataObject
         'TrackerType' => 'Varchar'
     );
 
+    private static $has_one = array(
+        'ShippingMatrixConfig' => 'ShippingMatrixConfig'
+    );
+
     private static $has_many = array(
         'DomesticShippingRegions' => 'DomesticShippingRegion'
     );
@@ -24,6 +28,7 @@ class DomesticShippingCarrier extends DataObject
         $fields = parent::getCMSFields();
         $fields->removeByName(array(
             'Sort',
+            'ShippingMatrixConfigID',
             'DomesticShippingRegions',
             'DomesticShippingExtras'
         ));
