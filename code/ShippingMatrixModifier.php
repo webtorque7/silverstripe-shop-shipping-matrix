@@ -42,7 +42,7 @@ class ShippingMatrixModifier extends ShippingModifier
 
 		if (self::is_domestic($country)) {
 
-			$info = DomesticShippingCarrier::process($items);
+			$info = DomesticShippingCarrier::process($items, $region);
 			$shippingCharge = $info['Amount'];
 			if ($order) {
 				$order->DomesticCarriers()->removeAll();
