@@ -28,13 +28,13 @@ class DomesticShippingRegion extends DataObject{
 		$fields = parent::getCMSFields();
 		$fields->removeByName(array(
 			'Sort',
-			'DomesticShippingCarriers'
+			'DomesticShippingCarrierID'
 		));
 
 		$region = singleton('Address')->getRegionList();
 
 		$fields->addFieldsToTab('Root.Main', array(
-			TextField::create('Title'),
+			TextField::create('Title', 'Title'),
 			CheckboxSetField::create('Region', 'Region', $region),
 			TextField::create('Amount', 'Amount')
 		));

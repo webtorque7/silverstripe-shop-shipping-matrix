@@ -39,6 +39,7 @@ class ShippingQuantityRange extends DataObject
         ));
 
         $fields->addFieldsToTab('Root.Main', array(
+                TextField::create('Title', 'Title'),
                 TextField::create('MinQuantity', 'Minimum Quantity'),
                 TextField::create('MaxQuantity', 'Maximum Quantity')
             )

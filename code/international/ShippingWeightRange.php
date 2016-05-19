@@ -39,6 +39,7 @@ class ShippingWeightRange extends DataObject
         ));
 
         $fields->addFieldsToTab('Root.Main', array(
+            TextField::create('Title', 'Title'),
             TextField::create('MinWeight', 'Minimum Weight(kg)'),
             TextField::create('MaxWeight', 'Maximum Weight(kg)')
         ));

@@ -47,46 +47,55 @@ class InternationalShippingCarrier extends DataObject
         unset($types['Product']);
 
         $fields->addFieldsToTab('Root.Main', array(
+            TextField::create('Title', 'Carrier Name'),
             OptionsetField::create('UnitType', 'Unit Type', array('Weight' => 'Weight', 'Quantity' => 'Quantity')),
             CheckboxSetField::create('SupportedProductType', 'Supported Product Types', $types),
-            GridField::create(
-                'ShippingRates',
-                'Shipping Shipping Rates',
-                $this->ShippingRates(),
-                GridFieldConfig_RelationEditor::create()
-                    ->addComponent(GridFieldOrderableRows::create('Sort'))
-            )
         ));
 
-        $fields->addFieldToTab('Root.ShippingZones',
-            GridField::create(
-                'InternationalShippingZones',
-                'International Shipping Zones',
-                $this->InternationalShippingZones(),
-                GridFieldConfig_RelationEditor::create()
-                    ->addComponent(GridFieldOrderableRows::create('Sort'))
-            )
-        );
+        if($this->exists()){
+            $fields->addFieldToTab('Root.Main',
+                GridField::create(
+                    'ShippingRates',
+                    'Shipping Shipping Rates',
+                    $this->ShippingRates(),
+                    GridFieldConfig_RelationEditor::create()
+                        ->addComponent(GridFieldOrderableRows::create('Sort'))
+                )
+            );
 
-        $fields->addFieldToTab('Root.WeightRanges',
-            GridField::create(
-                'ShippingWeightRanges',
-                'Shipping Weight Ranges',
-                $this->ShippingWeightRanges(),
-                GridFieldConfig_RelationEditor::create()
-                    ->addComponent(GridFieldOrderableRows::create('Sort'))
-            )
-        );
+            $fields->addFieldToTab('Root.ShippingZones',
+                GridField::create(
+                    'InternationalShippingZones',
+                    'International Shipping Zones',
+                    $this->InternationalShippingZones(),
+                    GridFieldConfig_RelationEditor::create()
+                        ->addComponent(GridFieldOrderableRows::create('Sort'))
+                )
+            );
 
-        $fields->addFieldToTab('Root.QuantityRanges',
-            GridField::create(
-                'ShippingQuantityRanges',
-                'Shipping Quantity Ranges',
-                $this->ShippingQuantityRanges(),
-                GridFieldConfig_RelationEditor::create()
-                    ->addComponent(GridFieldOrderableRows::create('Sort'))
-            )
-        );
+            $fields->addFieldToTab('Root.WeightRanges',
+                GridField::create(
+                    'ShippingWeightRanges',
+                    'Shipping Weight Ranges',
+                    $this->ShippingWeightRanges(),
+                    GridFieldConfig_RelationEditor::create()
+                        ->addComponent(GridFieldOrderableRows::create('Sort'))
+                )
+            );
+
+            $fields->addFieldToTab('Root.QuantityRanges',
+                GridField::create(
+                    'ShippingQuantityRanges',
+                    'Shipping Quantity Ranges',
+                    $this->ShippingQuantityRanges(),
+                    GridFieldConfig_RelationEditor::create()
+                        ->addComponent(GridFieldOrderableRows::create('Sort'))
+                )
+            );
+        }
+        else{
+            $fields->addFieldToTab('Root.Main', LiteralField::create('SavingTip', '<p class="message">Please save before adding setting shipping zones, rates and ranges.</p>'));
+        }
 
         return $fields;
     }

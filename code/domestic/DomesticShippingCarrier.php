@@ -19,11 +19,6 @@ class DomesticShippingCarrier extends DataObject
         'DomesticShippingExtras' => 'DomesticShippingExtra'
     );
 
-    public function canView($member = null)
-    {
-        return true;
-    }
-
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
@@ -43,22 +38,30 @@ class DomesticShippingCarrier extends DataObject
         }
 
         $fields->addFieldsToTab('Root.Main', array(
-            DropdownField::create('TrackerType', 'Tracker Type', $trackers),
-            GridField::create(
-                'DomesticShippingRegions',
-                'Domestic Shipping Regions',
-                $this->DomesticShippingRegions(),
-                GridFieldConfig_RelationEditor::create()
-                    ->addComponent(GridFieldOrderableRows::create('Sort'))
-            ),
-            GridField::create(
-                'DomesticShippingExtras',
-                'Domestic Shipping Extras',
-                $this->DomesticShippingExtras(),
-                GridFieldConfig_RelationEditor::create()
-                    ->addComponent(GridFieldOrderableRows::create('Sort'))
-            )
+            TextField::create('Title', 'Carrier Name'),
+            DropdownField::create('TrackerType', 'Tracker Type', $trackers)
         ));
+
+        if ($this->exists()) {
+            $fields->addFieldsToTab('Root.Main', array(
+                GridField::create(
+                    'DomesticShippingRegions',
+                    'Domestic Shipping Regions',
+                    $this->DomesticShippingRegions(),
+                    GridFieldConfig_RelationEditor::create()
+                        ->addComponent(GridFieldOrderableRows::create('Sort'))
+                ),
+                GridField::create(
+                    'DomesticShippingExtras',
+                    'Domestic Shipping Extras',
+                    $this->DomesticShippingExtras(),
+                    GridFieldConfig_RelationEditor::create()
+                        ->addComponent(GridFieldOrderableRows::create('Sort'))
+                )
+            ));
+        } else {
+            $fields->addFieldToTab('Root.Main', LiteralField::create('SavingTip', '<p class="message">Please save before adding shipping regions and extra costs.</p>'));
+        }
 
         return $fields;
     }

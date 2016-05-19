@@ -1,9 +1,0 @@
----
-Name: countries
----
-ShippingMatrixConfig:
-  country_locale_mapping:
-    'NZ': "en_NZ"
-    'AU': "en_AU"
-    'US': "en_US"
-    'CN': "zh_CN"

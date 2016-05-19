@@ -39,6 +39,8 @@ class InternationalShippingZone extends DataObject
         ));
 
         $fields->addFieldToTab('Root.Main',
+            TextField::create('Title', 'Carrier Name'),
+            CheckboxField::create('DefaultZone', 'Default Zone'),
             CheckboxSetField::create(
                 'ShippingCountries',
                 'Shipping Countries',
