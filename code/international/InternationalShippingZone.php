@@ -17,12 +17,9 @@ class InternationalShippingZone extends DataObject
         'DefaultZone' => 'Boolean'
     );
 
-    private static $belongs_many_many = array(
-        'InternationalShippingCarriers' => 'InternationalShippingCarrier'
-    );
-
     private static $has_one = array(
-        'ShippingRate' => 'ShippingRate'
+        'ShippingRate' => 'ShippingRate',
+        'InternationalShippingCarrier' => 'InternationalShippingCarrier'
     );
 
     private static $summary_fields = array(
@@ -34,7 +31,7 @@ class InternationalShippingZone extends DataObject
         $fields = parent::getCMSFields();
         $fields->removeByName(array(
             'Sort',
-            'InternationalShippingCarriers',
+            'InternationalShippingCarrierID',
             'ShippingRateID'
         ));
 
@@ -53,7 +50,13 @@ class InternationalShippingZone extends DataObject
 
     public static function get_shipping_zone($deliveryCountry)
     {
-        $shippingZones = InternationalShippingZone::get();
+        $shippingMatrix = ShippingMatrixConfig::current();
+        $internationalCarriers = $shippingMatrix->InternationalShippingCarriers();
+        $carrierIDs = implode(',', $internationalCarriers->column('ID'));
+
+        $shippingZones = InternationalShippingZone::get()
+            ->where('"InternationalShippingCarrierID" IN (' . $carrierIDs . ')');
+
         foreach ($shippingZones as $shippingZone) {
             $countryArray = explode(",", $shippingZone->ShippingCountries);
             if (in_array($deliveryCountry, $countryArray)) {

@@ -97,7 +97,7 @@ class DomesticShippingCarrier extends DataObject
             }
         }
 
-        singleton('DomesticShippingCarrier')->extend('updateShippingCharge', $shippingCharge, $carriers, $items);
+        singleton('DomesticShippingCarrier')->extend('updateShippingCharge', $shippingCharge, $carriers, $items, $region);
         return array('Amount' => $shippingCharge, 'Carriers' => $carriers);
     }
 }

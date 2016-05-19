@@ -24,11 +24,11 @@ class InternationalShippingCarrier extends DataObject
     );
 
     private static $has_many = array(
-        'ShippingRates' => 'ShippingRate'
+        'ShippingRates' => 'ShippingRate',
+        'InternationalShippingZones' => 'InternationalShippingZone'
     );
 
     private static $many_many = array(
-        'InternationalShippingZones' => 'InternationalShippingZone',
         'ShippingWeightRanges' => 'ShippingWeightRange',
         'ShippingQuantityRanges' => 'ShippingQuantityRange'
     );
