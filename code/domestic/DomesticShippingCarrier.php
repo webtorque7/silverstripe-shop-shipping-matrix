@@ -78,26 +78,31 @@ class DomesticShippingCarrier extends DataObject
 
     public static function process($items, $region = null)
     {
-        $extraCosts = 0;
-        $shippingCharge = 0;
+        $extraCharge = 0;
         $carriers = array();
 
-        if ($extras = DomesticShippingExtra::get()) {
-            foreach ($extras as $extra) {
-                $extraCosts += $extra->Amount;
-            }
+        $shippingRegion = DomesticShippingRegion::get_shipping_region($region);
+        $unsupportedRegionException = new ShippingMatrixException('Selected region is not supported please contact us to arrange other shipping methods.');
+
+        if (empty($shippingRegion)) {
+            throw $unsupportedRegionException;
         }
 
-        if ($region) {
-            $shippingRegion = DomesticShippingRegion::get()->filter('Region:PartialMatch', $region)->first();
+        $carrier = $shippingRegion->DomesticShippingCarrier();
 
-            if ($shippingRegion) {
-                $shippingCharge = $shippingRegion->Amount + $extraCosts;
-                $carriers[] = $shippingRegion->DomesticShippingCarrier();
-            }
+        if (empty($carrier)) {
+            throw $unsupportedRegionException;
         }
 
-        singleton('DomesticShippingCarrier')->extend('updateShippingCharge', $shippingCharge, $carriers, $items, $region);
+        $shippingExtras = $carrier->DomesticShippingExtras();
+        foreach ($shippingExtras as $extra) {
+            $extraCharge += $extra->Amount;
+        }
+
+        $shippingCharge = $shippingRegion->Amount + $extraCharge;
+        $carriers[] = $carrier;
+
+        singleton('DomesticShippingCarrier')->extend('UpdateShippingCharge', $shippingCharge, $carriers, $items, $region);
         return array('Amount' => $shippingCharge, 'Carriers' => $carriers);
     }
 }

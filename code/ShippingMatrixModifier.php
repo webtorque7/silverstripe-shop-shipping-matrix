@@ -10,7 +10,6 @@ class ShippingMatrixModifier extends ShippingModifier
 	private static $db = array(
 		'ShippingTitle' => 'Varchar(255)',
 		'IsDomestic' => 'Boolean',
-		'IsPickup' => 'Boolean',
 		'Country' => 'Varchar(3)',
 		'Region' => 'Varchar(50)'
 	);
@@ -29,7 +28,10 @@ class ShippingMatrixModifier extends ShippingModifier
 		$this->loadCountry();
 		$this->loadRegion();
 
-		$this->Amount = self::calculate($this->Region, $this->Country, $this->Order()->Items(), $this->Order());
+		$applyShipping = $this->extend('preUpdateValueCheck');
+		if($applyShipping){
+			$this->Amount = self::calculate($this->Region, $this->Country, $this->Order()->Items(), $this->Order());
+		}
 
 		$this->extend('updateValue');
 		return $this->Amount;

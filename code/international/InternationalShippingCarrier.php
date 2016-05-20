@@ -201,19 +201,19 @@ class InternationalShippingCarrier extends DataObject
 
     public static function process($items, $country)
     {
-        $shippingZone = InternationalShippingZone::get_shipping_zone($country);
+        $extraCharge = 0;
 
-        //must have a shipping zone
+        $shippingZone = InternationalShippingZone::get_shipping_zone($country);
+        $unsupportedCountryException = new ShippingMatrixException('Selected country is not supported please contact us to arrange other shipping methods.');
+
         if (empty($shippingZone)) {
-            throw new ShippingMatrixException('Selected country is not supported,
-					please contact us to arrange other shipping methods.');
+            throw $unsupportedCountryException;
         }
 
         $carriers = $shippingZone->InternationalShippingCarriers()->toArray();
 
         if (empty($carriers)) {
-            throw new ShippingMatrixException('Selected country is not supported,
-					please contact us to arrange other shipping methods.');
+            $unsupportedCountryException;
         }
 
         //distribute items to carrier which ships it
@@ -224,11 +224,11 @@ class InternationalShippingCarrier extends DataObject
         }
 
         //get charge from each carrier
-        $charge = 0;
         foreach ($carriers as $carrier) {
-            $charge += $carrier->calculate($shippingZone);
+            $extraCharge += $carrier->calculate($shippingZone);
         }
 
-        return array('Amount' => $charge, 'Carriers' => $carriers);
+        singleton('InternationalShippingCarrier')->extend('UpdateShippingCharge', $shippingCharge, $carriers, $items, $country);
+        return array('Amount' => $extraCharge, 'Carriers' => $carriers);
     }
 }

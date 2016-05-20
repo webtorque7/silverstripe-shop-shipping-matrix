@@ -65,9 +65,8 @@ class InternationalShippingZone extends DataObject
         }
 
         //fall back looking for default zone
-        return InternationalShippingZone::get()->filter('DefaultZone', 1)->first();
+        return InternationalShippingZone::get()->filter(array('DefaultZone' => true))->first();
     }
-
 
     public static function supported_countries()
     {
