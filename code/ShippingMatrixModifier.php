@@ -20,6 +20,8 @@ class ShippingMatrixModifier extends ShippingModifier
 
 	private static $singular_name = 'Shipping';
 
+	private static $last_error = null;
+
 	/**
 	 * Calculates value to store, based on incoming running total.
 	 * @param float $incoming the incoming running total.
@@ -42,22 +44,25 @@ class ShippingMatrixModifier extends ShippingModifier
 
 		if (!$country) return;
 
-		if (self::is_domestic($country)) {
+		try {
+			if (self::is_domestic($country)) {
 
-			$info = DomesticShippingCarrier::process($items, $region);
-			$shippingCharge = $info['Amount'];
-			if ($order) {
-				$order->DomesticCarriers()->removeAll();
-				$order->DomesticCarriers()->addMany($info['Carriers']);
+				$info = DomesticShippingCarrier::process($items, $region);
+				$shippingCharge = $info['Amount'];
+				if ($order) {
+					$order->DomesticCarriers()->removeAll();
+					$order->DomesticCarriers()->addMany($info['Carriers']);
+				}
+			} else {
+				$info = InternationalShippingCarrier::process($items, $country);
+				$shippingCharge = $info['Amount'];
+				if ($order) {
+					$order->InternationalCarriers()->removeAll();
+					$order->InternationalCarriers()->addMany($info['Carriers']);
+				}
 			}
-		}
-		else {
-			$info = InternationalShippingCarrier::process($items, $country);
-			$shippingCharge = $info['Amount'];
-			if ($order) {
-				$order->InternationalCarriers()->removeAll();
-				$order->InternationalCarriers()->addMany($info['Carriers']);
-			}
+		} catch (ShippingMatrixException $e) {
+			self::$last_error = $e->getMessage();
 		}
 
 		return $shippingCharge;
@@ -143,5 +148,10 @@ class ShippingMatrixModifier extends ShippingModifier
 		$this->extend('modify', $subtotal, $forcecalculation);
 
 		return $subtotal;
+	}
+
+	public static function get_last_error()
+	{
+		return self::$last_error;
 	}
 }
