@@ -31,7 +31,7 @@ class ShippingMatrixModifier extends ShippingModifier
 		$this->loadRegion();
 
 		$applyShipping = $this->extend('preUpdateValueCheck');
-		if($applyShipping){
+		if($applyShipping == true){
 			$this->Amount = self::calculate($this->Region, $this->Country, $this->Order()->Items(), $this->Order());
 		}
 
@@ -46,7 +46,6 @@ class ShippingMatrixModifier extends ShippingModifier
 
 		try {
 			if (self::is_domestic($country)) {
-
 				$info = DomesticShippingCarrier::process($items, $region);
 				$shippingCharge = $info['Amount'];
 				if ($order) {
