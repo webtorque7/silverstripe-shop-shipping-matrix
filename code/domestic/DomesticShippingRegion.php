@@ -59,9 +59,9 @@ class DomesticShippingRegion extends DataObject
         }
     }
 
-    public static function get_available_regions()
+    public static function get_available_regions($country = null)
     {
-        $shippingMatrix = ShippingMatrixConfig::current();
+        $shippingMatrix = ShippingMatrixConfig::current($country);
         $domesticCarriers = $shippingMatrix->DomesticShippingCarriers();
         $carrierIDs = implode(',', $domesticCarriers->column('ID'));
 

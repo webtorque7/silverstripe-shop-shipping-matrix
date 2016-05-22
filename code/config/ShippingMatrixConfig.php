@@ -104,9 +104,9 @@ class ShippingMatrixConfig extends DataExtension
         return false;
     }
 
-    public static function current()
+    public static function current($country = null)
     {
         $class = Config::inst()->get('ShippingMatrixConfig', 'config_class');
-        return $class::current();
+        return $class::current($country);
     }
 } 
