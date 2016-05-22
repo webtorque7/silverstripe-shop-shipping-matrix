@@ -25,7 +25,7 @@ class ShippingMatrixConfig extends DataExtension
         'PickupText' => 'Varchar(200)'
     );
 
-    private static $has_many = array(
+    private static $many_many = array(
         'DomesticShippingCarriers' => 'DomesticShippingCarrier',
         'InternationalShippingCarriers' => 'InternationalShippingCarrier'
     );
