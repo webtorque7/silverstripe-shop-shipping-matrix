@@ -15,6 +15,10 @@ class InternationalShippingCarrier extends DataObject
         'SupportedProductType' => 'Varchar'
     );
 
+    private static $has_one = array(
+        'ShippingMatrix' => 'StoreWarehouse'
+    );
+
     private static $belongs_to = array(
         'ShippingMatrixModifier' => 'ShippingMatrixModifier'
     );
@@ -36,6 +40,7 @@ class InternationalShippingCarrier extends DataObject
         $fields = parent::getCMSFields();
         $fields->removeByName(array(
             'Sort',
+            'StoreWarehouseID',
             'InternationalShippingZones',
             'ShippingWeightRanges',
             'ShippingQuantityRanges',

@@ -18,8 +18,11 @@ class InternationalShippingZone extends DataObject
     );
 
     private static $has_one = array(
-        'ShippingRate' => 'ShippingRate',
-        'InternationalShippingCarrier' => 'InternationalShippingCarrier'
+        'ShippingRate' => 'ShippingRate'
+    );
+
+    private static $belongs_many_many = array(
+        'InternationalShippingCarriers' => 'InternationalShippingCarrier'
     );
 
     private static $summary_fields = array(
@@ -31,7 +34,7 @@ class InternationalShippingZone extends DataObject
         $fields = parent::getCMSFields();
         $fields->removeByName(array(
             'Sort',
-            'InternationalShippingCarrierID',
+            'InternationalShippingCarriers',
             'ShippingRateID'
         ));
 
@@ -55,7 +58,10 @@ class InternationalShippingZone extends DataObject
         $carrierIDs = implode(',', $internationalCarriers->column('ID'));
 
         $shippingZones = InternationalShippingZone::get()
-            ->where('"InternationalShippingCarrierID" IN (' . $carrierIDs . ')');
+            ->innerJoin('InternationalShippingCarrier_InternationalShippingZones',
+                '"InternationalShippingCarrier_InternationalShippingZones"."InternationalShippingZoneID" = "InternationalShippingZone"."ID"')
+            ->innerJoin('InternationalShippingCarrier', '"InternationalShippingCarrier"."ID" = "InternationalShippingCarrier_InternationalShippingZones"."InternationalShippingCarrierID"')
+            ->where('"InternationalShippingCarriers"."ShippingMatrixID" =  ' . $shippingMatrix->ID);
 
         foreach ($shippingZones as $shippingZone) {
             $countryArray = explode(",", $shippingZone->ShippingCountries);
