@@ -28,7 +28,7 @@ class DomesticShippingCarrier extends DataObject
         $fields = parent::getCMSFields();
         $fields->removeByName(array(
             'Sort',
-            'StoreWarehouseID',
+            'ShippingMatrixID',
             'DomesticShippingRegions',
             'DomesticShippingExtras'
         ));
@@ -53,17 +53,26 @@ class DomesticShippingCarrier extends DataObject
                     'DomesticShippingRegions',
                     'Domestic Shipping Regions',
                     $this->DomesticShippingRegions(),
-                    GridFieldConfig_RelationEditor::create()
-                        ->addComponent(GridFieldOrderableRows::create('Sort'))
+                    $regionConfig = GridFieldConfig_RecordViewer::create()
                 ),
                 GridField::create(
                     'DomesticShippingExtras',
                     'Domestic Shipping Extras',
                     $this->DomesticShippingExtras(),
-                    GridFieldConfig_RelationEditor::create()
-                        ->addComponent(GridFieldOrderableRows::create('Sort'))
+                    $extraConfig = GridFieldConfig_RelationEditor::create()
                 )
             ));
+            $regionConfig
+                ->addComponent(GridFieldOrderableRows::create('Sort'))
+                ->addComponent(new GridFieldAddExistingAutocompleter)
+                ->addComponent(new GridFieldDeleteAction(true));
+
+            $extraConfig
+                ->addComponent(GridFieldOrderableRows::create('Sort'))
+                ->removeComponentsByType('GridFieldAddExistingAutocompleter')
+                ->removeComponentsByType('GridFieldDeleteAction')
+                ->addComponent(new GridFieldDeleteAction(false));
+
         } else {
             $fields->addFieldToTab('Root.Main', LiteralField::create('SavingTip', '<p class="message">Please save before adding shipping regions and extra costs.</p>'));
         }

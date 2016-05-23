@@ -14,10 +14,6 @@ class ShippingMatrixModifier extends ShippingModifier
 		'Region' => 'Varchar(50)'
 	);
 
-	private static $has_one = array(
-		'InternationalShippingCarrier' => 'InternationalShippingCarrier'
-	);
-
 	private static $singular_name = 'Shipping';
 
 	private static $last_error = null;

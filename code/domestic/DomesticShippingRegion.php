@@ -12,17 +12,22 @@ class DomesticShippingRegion extends DataObject
         'Title' => 'Varchar(100)',
         'Region' => 'Text',
         'Sort' => 'Int',
-        'Amount' => 'Currency'
+        'Amount' => 'Currency',
+        'DefaultRegion' => 'Boolean'
     );
 
     private static $has_one = array(
-        'DomesticShippingCarrier' => 'DomesticShippingCarrier'
+        'DomesticShippingCarrier' => 'DomesticShippingCarrier',
+        'ShippingMatrix' => 'StoreWarehouse'
     );
 
     private static $summary_fields = array(
-        'Title' => 'Title',
         'Region' => 'Region',
         'Amount' => 'Amount'
+    );
+
+    private static $searchable_fields = array(
+        'Region' => 'Region'
     );
 
     public function getCMSFields()
@@ -30,27 +35,39 @@ class DomesticShippingRegion extends DataObject
         $fields = parent::getCMSFields();
         $fields->removeByName(array(
             'Sort',
+            'ShippingMatrixID',
             'DomesticShippingCarrierID'
         ));
 
         $fields->addFieldsToTab('Root.Main', array(
             TextField::create('Title', 'Title'),
             TextField::create('Region', 'Region'),
-            TextField::create('Amount', 'Amount')
+            TextField::create('Amount', 'Amount'),
+            CheckboxField::create('DefaultRegion', 'Default Region?')
         ));
 
         return $fields;
+    }
+
+    public function onBeforeWrite()
+    {
+        parent::onBeforeWrite();
+        if(!$this->Title){
+            $this->Title = $this->Region;
+        }
     }
 
     public static function get_shipping_region($deliveryRegion)
     {
         $availableRegions = self::get_available_regions();
         if (!empty($availableRegions)) {
-            $shippingRegion = $availableRegions->filter('Region:PartialMatch', $deliveryRegion)->first();
+            $shippingRegion = $availableRegions->filter('Region', $deliveryRegion)->first();
 
             if ($shippingRegion && $shippingRegion->exists()) {
                 return $shippingRegion;
             }
+
+            return $availableRegions->filter(array('DefaultRegion' => true))->first();
         }
     }
 

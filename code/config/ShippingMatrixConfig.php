@@ -27,7 +27,11 @@ class ShippingMatrixConfig extends DataExtension
 
     private static $has_many = array(
         'DomesticShippingCarriers' => 'DomesticShippingCarrier',
-        'InternationalShippingCarriers' => 'InternationalShippingCarrier'
+        'InternationalShippingCarriers' => 'InternationalShippingCarrier',
+
+        'InternationalShippingZones' => 'InternationalShippingZone',
+        'DomesticShippingRegions' => 'DomesticShippingRegion'
+
     );
 
     private static $defaults = array(
@@ -50,7 +54,9 @@ class ShippingMatrixConfig extends DataExtension
             'InternationalShippingText',
             'PickupText',
             'DomesticShippingCarriers',
-            'InternationalShippingCarriers'
+            'InternationalShippingCarriers',
+            'InternationalShippingZones',
+            'DomesticShippingRegions'
         ));
         $fields->addFieldToTab('Root', new TabSet('Shipping',
             new Tab('Main',
@@ -68,7 +74,7 @@ class ShippingMatrixConfig extends DataExtension
                 GridField::create(
                     'DomesticShippingRegion',
                     'Domestic Shipping Region',
-                    DomesticShippingRegion::get(),
+                    $this->owner->DomesticShippingRegions(),
                     GridFieldConfig_RecordEditor::create()
                         ->addComponent(GridFieldOrderableRows::create('Sort'))
                 ),
@@ -84,7 +90,7 @@ class ShippingMatrixConfig extends DataExtension
                 GridField::create(
                     'InternationalShippingZone',
                     'International Shipping Zone',
-                    InternationalShippingZone::get(),
+                    $this->owner->InternationalShippingZones(),
                     GridFieldConfig_RecordEditor::create()
                         ->addComponent(GridFieldOrderableRows::create('Sort'))
                 ),
@@ -108,5 +114,9 @@ class ShippingMatrixConfig extends DataExtension
     {
         $class = Config::inst()->get('ShippingMatrixConfig', 'config_class');
         return $class::current($country);
+    }
+
+    public function canShipOverseas(){
+        return empty($this->InternationalShippingCarriers()) ? false : true;
     }
 } 

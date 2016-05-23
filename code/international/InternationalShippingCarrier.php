@@ -19,18 +19,14 @@ class InternationalShippingCarrier extends DataObject
         'ShippingMatrix' => 'StoreWarehouse'
     );
 
-    private static $belongs_to = array(
-        'ShippingMatrixModifier' => 'ShippingMatrixModifier'
-    );
-
     private static $has_many = array(
-        'ShippingRates' => 'ShippingRate',
-        'InternationalShippingZones' => 'InternationalShippingZone'
+        'ShippingRates' => 'ShippingRate'
     );
 
     private static $many_many = array(
         'ShippingWeightRanges' => 'ShippingWeightRange',
-        'ShippingQuantityRanges' => 'ShippingQuantityRange'
+        'ShippingQuantityRanges' => 'ShippingQuantityRange',
+        'InternationalShippingZones' => 'InternationalShippingZone'
     );
 
     protected $items = array();
@@ -40,7 +36,7 @@ class InternationalShippingCarrier extends DataObject
         $fields = parent::getCMSFields();
         $fields->removeByName(array(
             'Sort',
-            'StoreWarehouseID',
+            'ShippingMatrixID',
             'InternationalShippingZones',
             'ShippingWeightRanges',
             'ShippingQuantityRanges',
@@ -63,40 +59,60 @@ class InternationalShippingCarrier extends DataObject
                     'ShippingRates',
                     'Shipping Shipping Rates',
                     $this->ShippingRates(),
-                    GridFieldConfig_RelationEditor::create()
-                        ->addComponent(GridFieldOrderableRows::create('Sort'))
+                    $rateConfig = GridFieldConfig_RelationEditor::create()
                 )
             );
+
+            $rateConfig
+                ->addComponent(GridFieldOrderableRows::create('Sort'))
+                ->removeComponentsByType('GridFieldAddExistingAutocompleter')
+                ->removeComponentsByType('GridFieldDeleteAction')
+                ->addComponent(new GridFieldDeleteAction(false));
 
             $fields->addFieldToTab('Root.ShippingZones',
                 GridField::create(
                     'InternationalShippingZones',
                     'International Shipping Zones',
                     $this->InternationalShippingZones(),
-                    GridFieldConfig_RelationEditor::create()
-                        ->addComponent(GridFieldOrderableRows::create('Sort'))
+                    $zoneConfig = GridFieldConfig_RecordViewer::create()
                 )
             );
+
+            $zoneConfig
+                ->addComponent(GridFieldOrderableRows::create('Sort'))
+                ->addComponent(new GridFieldAddExistingAutocompleter)
+                ->addComponent(new GridFieldDeleteAction(true));
 
             $fields->addFieldToTab('Root.WeightRanges',
                 GridField::create(
                     'ShippingWeightRanges',
                     'Shipping Weight Ranges',
                     $this->ShippingWeightRanges(),
-                    GridFieldConfig_RelationEditor::create()
-                        ->addComponent(GridFieldOrderableRows::create('Sort'))
+                    $weightConfig = GridFieldConfig_RelationEditor::create()
                 )
             );
+
+            $weightConfig
+                ->addComponent(GridFieldOrderableRows::create('Sort'))
+                ->removeComponentsByType('GridFieldAddExistingAutocompleter')
+                ->removeComponentsByType('GridFieldDeleteAction')
+                ->addComponent(new GridFieldDeleteAction(false));
 
             $fields->addFieldToTab('Root.QuantityRanges',
                 GridField::create(
                     'ShippingQuantityRanges',
                     'Shipping Quantity Ranges',
                     $this->ShippingQuantityRanges(),
-                    GridFieldConfig_RelationEditor::create()
+                    $quantityConfig = GridFieldConfig_RelationEditor::create()
                         ->addComponent(GridFieldOrderableRows::create('Sort'))
                 )
             );
+
+            $quantityConfig
+                ->addComponent(GridFieldOrderableRows::create('Sort'))
+                ->removeComponentsByType('GridFieldAddExistingAutocompleter')
+                ->removeComponentsByType('GridFieldDeleteAction')
+                ->addComponent(new GridFieldDeleteAction(false));
         }
         else{
             $fields->addFieldToTab('Root.Main', LiteralField::create('SavingTip', '<p class="message">Please save before adding setting shipping zones, rates and ranges.</p>'));

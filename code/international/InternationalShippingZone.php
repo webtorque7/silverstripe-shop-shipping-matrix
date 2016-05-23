@@ -18,7 +18,8 @@ class InternationalShippingZone extends DataObject
     );
 
     private static $has_one = array(
-        'ShippingRate' => 'ShippingRate'
+        'ShippingRate' => 'ShippingRate',
+        'ShippingMatrix' => 'StoreWarehouse'
     );
 
     private static $belongs_many_many = array(
@@ -26,7 +27,11 @@ class InternationalShippingZone extends DataObject
     );
 
     private static $summary_fields = array(
-        'Title' => 'Title'
+        'ShippingCountries' => 'Shipping Countries'
+    );
+
+    private static $searchable_fields = array(
+        'ShippingCountries' => 'ShippingCountries'
     );
 
     public function getCMSFields()
@@ -34,34 +39,43 @@ class InternationalShippingZone extends DataObject
         $fields = parent::getCMSFields();
         $fields->removeByName(array(
             'Sort',
+            'ShippingMatrixID',
             'InternationalShippingCarriers',
             'ShippingRateID'
         ));
 
-        $fields->addFieldToTab('Root.Main',
-            TextField::create('Title', 'Carrier Name'),
+        $fields->addFieldsToTab('Root.Main', array(
+            TextField::create('Title', 'Title'),
             CheckboxField::create('DefaultZone', 'Default Zone'),
             CheckboxSetField::create(
                 'ShippingCountries',
                 'Shipping Countries',
                 ShopConfig::config()->iso_3166_country_codes
-            )
+            ))
         );
 
         return $fields;
     }
 
+    public function onBeforeWrite()
+    {
+        parent::onBeforeWrite();
+        if(!$this->Title){
+            $this->Title = $this->ShippingCountries;
+        }
+    }
+
     public static function get_shipping_zone($deliveryCountry)
     {
         $shippingMatrix = ShippingMatrixConfig::current();
-        $internationalCarriers = $shippingMatrix->InternationalShippingCarriers();
-        $carrierIDs = implode(',', $internationalCarriers->column('ID'));
+//        $internationalCarriers = $shippingMatrix->InternationalShippingCarriers();
+//        $carrierIDs = implode(',', $internationalCarriers->column('ID'));
 
         $shippingZones = InternationalShippingZone::get()
             ->innerJoin('InternationalShippingCarrier_InternationalShippingZones',
                 '"InternationalShippingCarrier_InternationalShippingZones"."InternationalShippingZoneID" = "InternationalShippingZone"."ID"')
             ->innerJoin('InternationalShippingCarrier', '"InternationalShippingCarrier"."ID" = "InternationalShippingCarrier_InternationalShippingZones"."InternationalShippingCarrierID"')
-            ->where('"InternationalShippingCarriers"."ShippingMatrixID" =  ' . $shippingMatrix->ID);
+            ->where('"InternationalShippingCarrier"."ShippingMatrixID" =  ' . $shippingMatrix->ID);
 
         foreach ($shippingZones as $shippingZone) {
             $countryArray = explode(",", $shippingZone->ShippingCountries);
