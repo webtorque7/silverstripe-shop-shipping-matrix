@@ -12,8 +12,7 @@ class DomesticShippingRegion extends DataObject
         'Title' => 'Varchar(100)',
         'Region' => 'Text',
         'Sort' => 'Int',
-        'Amount' => 'Currency',
-        'DefaultRegion' => 'Boolean'
+        'Amount' => 'Currency'
     );
 
     private static $has_one = array(
@@ -37,8 +36,7 @@ class DomesticShippingRegion extends DataObject
         $fields->addFieldsToTab('Root.Main', array(
             TextField::create('Title', 'Title'),
             TextField::create('Region', 'Region'),
-            TextField::create('Amount', 'Amount'),
-            CheckboxField::create('DefaultRegion', 'Default Region'),
+            TextField::create('Amount', 'Amount')
         ));
 
         return $fields;
@@ -53,9 +51,6 @@ class DomesticShippingRegion extends DataObject
             if ($shippingRegion && $shippingRegion->exists()) {
                 return $shippingRegion;
             }
-
-            //fall back looking for default region
-            return $availableRegions->filter(array('DefaultRegion', true))->first();
         }
     }
 
@@ -64,7 +59,8 @@ class DomesticShippingRegion extends DataObject
         $shippingMatrix = ShippingMatrixConfig::current($country);
         $domesticCarriers = $shippingMatrix->DomesticShippingCarriers();
         $carrierIDs = implode(',', $domesticCarriers->column('ID'));
-
-        return DomesticShippingRegion::get()->where('"DomesticShippingCarrierID" IN (' . $carrierIDs . ')');
+        if(!empty($carrierIDs)){
+            return DomesticShippingRegion::get()->where('"DomesticShippingCarrierID" IN (' . $carrierIDs . ')');
+        }
     }
 }
