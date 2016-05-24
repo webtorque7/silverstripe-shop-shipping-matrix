@@ -41,7 +41,7 @@ class ShippingMatrixModifier extends ShippingModifier
 		if (!$country) return;
 
 		try {
-			if (self::is_domestic($country)) {
+			if (self::is_domestic($country, $order)) {
 				$info = DomesticShippingCarrier::process($items, $region);
 				$shippingCharge = $info['Amount'];
 				if ($order) {
@@ -76,7 +76,7 @@ class ShippingMatrixModifier extends ShippingModifier
 			$country = $zLocale->getRegion();
 		}
 
-		$this->IsDomestic = self::is_domestic($country);
+		$this->IsDomestic = self::is_domestic($country, $this->Order());
 		return $this->Country = $country;
 	}
 
@@ -90,8 +90,8 @@ class ShippingMatrixModifier extends ShippingModifier
 		return $this->Region = $region;
 	}
 
-	public static function is_domestic($country) {
-		$config = ShippingMatrixConfig::current();
+	public static function is_domestic($country, Order $order) {
+		$config = $order->StoreWarehouse();
 		return $config->Country === $country;
 	}
 
