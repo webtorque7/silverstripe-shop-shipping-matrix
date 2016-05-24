@@ -117,6 +117,7 @@ class ShippingMatrixConfig extends DataExtension
     }
 
     public function canShipOverseas(){
-        return !empty($this->owner->InternationalShippingCarriers()) ? true : false;
+
+        return ($this->owner->InternationalShippingCarriers()->count() > 0) ? true : false;
     }
 } 

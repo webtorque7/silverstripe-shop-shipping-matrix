@@ -8,8 +8,6 @@
  */
 class InternationalShippingZone extends DataObject
 {
-    protected static $supported_countries;
-
     private static $db = array(
         'Title' => 'Varchar(100)',
         'Sort' => 'Int',
@@ -67,15 +65,7 @@ class InternationalShippingZone extends DataObject
 
     public static function get_shipping_zone($deliveryCountry)
     {
-        $shippingMatrix = ShippingMatrixConfig::current();
-//        $internationalCarriers = $shippingMatrix->InternationalShippingCarriers();
-//        $carrierIDs = implode(',', $internationalCarriers->column('ID'));
-
-        $shippingZones = InternationalShippingZone::get()
-            ->innerJoin('InternationalShippingCarrier_InternationalShippingZones',
-                '"InternationalShippingCarrier_InternationalShippingZones"."InternationalShippingZoneID" = "InternationalShippingZone"."ID"')
-            ->innerJoin('InternationalShippingCarrier', '"InternationalShippingCarrier"."ID" = "InternationalShippingCarrier_InternationalShippingZones"."InternationalShippingCarrierID"')
-            ->where('"InternationalShippingCarrier"."ShippingMatrixID" =  ' . $shippingMatrix->ID);
+        $shippingZones = self::get_available_zones();
 
         foreach ($shippingZones as $shippingZone) {
             $countryArray = explode(",", $shippingZone->ShippingCountries);
@@ -88,19 +78,15 @@ class InternationalShippingZone extends DataObject
         return InternationalShippingZone::get()->filter(array('DefaultZone' => true))->first();
     }
 
-    public static function supported_countries()
-    {
-        if (!isset(self::$supported_countries)) {
-            $countries = array();
-            $zones = InternationalShippingZone::get();
-            foreach ($zones as $zone) {
-                $countries = array_merge($countries, explode(',', $zone->ShippingCountries));
-            }
+    public static function get_available_zones($country = null){
+        $shippingMatrix = ShippingMatrixConfig::current($country);
 
-            self::$supported_countries = $countries;
-        }
+        $shippingZones = InternationalShippingZone::get()
+            ->innerJoin('InternationalShippingCarrier_InternationalShippingZones',
+                '"InternationalShippingCarrier_InternationalShippingZones"."InternationalShippingZoneID" = "InternationalShippingZone"."ID"')
+            ->innerJoin('InternationalShippingCarrier', '"InternationalShippingCarrier"."ID" = "InternationalShippingCarrier_InternationalShippingZones"."InternationalShippingCarrierID"')
+            ->where('"InternationalShippingCarrier"."ShippingMatrixID" =  ' . $shippingMatrix->ID);
 
-        return self::$supported_countries;
+        return $shippingZones;
     }
-
-} 
+}
