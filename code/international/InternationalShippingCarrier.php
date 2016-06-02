@@ -57,7 +57,7 @@ class InternationalShippingCarrier extends DataObject
             $fields->addFieldToTab('Root.Main',
                 GridField::create(
                     'ShippingRates',
-                    'Shipping Shipping Rates',
+                    'Shipping Rates',
                     $this->ShippingRates(),
                     $rateConfig = GridFieldConfig_RelationEditor::create()
                 )
