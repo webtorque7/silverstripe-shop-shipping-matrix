@@ -55,26 +55,23 @@ class ShippingMatrixModifier extends ShippingModifier
 					$order->InternationalCarriers()->removeAll();
 					$order->InternationalCarriers()->addMany($info['Carriers']);
 				}
+
+				//convert currency
+				$userLocale = $order->UserLocale;
+				if($userLocale){
+					$storeCountry = singleton('ShopStore')->CurrentStoreCountry($userLocale);
+					$currency = $storeCountry->Currency;
+
+					$converter = DataObject::get_one('CurrencyConverter');
+					$conversionRate = $converter->CurrencyRates()->filter(array('Currency' => $currency))->first();
+
+					if($conversionRate && $conversionRate->exists()){
+						$shippingCharge = $shippingCharge * $conversionRate->Rate;
+					}
+				}
 			}
 		} catch (ShippingMatrixException $e) {
 			self::$last_error = $e->getMessage();
-		}
-
-		// all wine club orders are shipped from NZ so NZD is fine.
-		if($order && $order->ClassName !== 'WineClubOrder'){
-			// shop order shipping price needs to be converted to user locale currency.
-			$userLocale = Cookie::get('UserLocale');
-			if($userLocale){
-				$userStoreCountry = singleton('ShopStore')->CurrentStoreCountry($userLocale);
-				$userCurrency = $userStoreCountry->Currency;
-
-				$converter = DataObject::get_one('CurrencyConverter');
-				$conversionRate = $converter->CurrencyRates()->filter(array('Currency' => $userCurrency))->first();
-
-				if($conversionRate && $conversionRate->exists()){
-					$shippingCharge = $shippingCharge * $conversionRate->Rate;
-				}
-			}
 		}
 
 		return $shippingCharge;
