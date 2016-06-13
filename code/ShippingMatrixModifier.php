@@ -55,23 +55,24 @@ class ShippingMatrixModifier extends ShippingModifier
 					$order->InternationalCarriers()->removeAll();
 					$order->InternationalCarriers()->addMany($info['Carriers']);
 				}
-
-				//convert currency
-				$userLocale = $order->UserLocale;
-				if($userLocale){
-					$storeCountry = singleton('ShopStore')->CurrentStoreCountry($userLocale);
-					$currency = $storeCountry->Currency;
-
-					$converter = DataObject::get_one('CurrencyConverter');
-					$conversionRate = $converter->CurrencyRates()->filter(array('Currency' => $currency))->first();
-
-					if($conversionRate && $conversionRate->exists()){
-						$shippingCharge = $shippingCharge * $conversionRate->Rate;
-					}
-				}
 			}
 		} catch (ShippingMatrixException $e) {
 			self::$last_error = $e->getMessage();
+		}
+
+		if($shippingCharge > 0){
+			$userLocale = $order->UserLocale;
+			if($userLocale){
+				$storeCountry = singleton('ShopStore')->CurrentStoreCountry($userLocale);
+				$currency = $storeCountry->Currency;
+
+				$converter = DataObject::get_one('CurrencyConverter');
+				$conversionRate = $converter->CurrencyRates()->filter(array('Currency' => $currency))->first();
+
+				if($conversionRate && $conversionRate->exists()){
+					$shippingCharge = $shippingCharge * $conversionRate->Rate;
+				}
+			}
 		}
 
 		return $shippingCharge;
