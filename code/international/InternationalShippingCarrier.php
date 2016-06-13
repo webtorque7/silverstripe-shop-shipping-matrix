@@ -154,7 +154,7 @@ class InternationalShippingCarrier extends DataObject
                 ->first();
 
             if (!empty($weightRate)) {
-                $rate = $weightRate->AmountPerUnit;
+                $rate = $weightRate->ShippingCharge;
                 $weightCharge = $totalWeight * $rate;
             } else {
                 throw new ShippingMatrixException('The total weight of the items exceeds the maximum weight of our couriers,
@@ -183,8 +183,7 @@ class InternationalShippingCarrier extends DataObject
                 ->first();
 
             if (!empty($quantityRate)) {
-                $rate = $quantityRate->AmountPerUnit;
-                $quantityCharge = $totalQuantity * $rate;
+                $quantityCharge = $quantityRate->ShippingCharge;
             } else {
                 throw new ShippingMatrixException('The total quantity of the items exceeds the maximum quantity of our couriers,
 					please contact us to explore other shipping methods.');

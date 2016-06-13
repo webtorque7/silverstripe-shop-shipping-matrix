@@ -11,7 +11,7 @@ class ShippingRate extends DataObject
     private static $db = array(
         'Title' => 'Varchar(100)',
         'Sort' => 'Int',
-        'AmountPerUnit' => 'Decimal'
+        'ShippingCharge' => 'Decimal'
     );
 
     private static $has_one = array(
@@ -59,7 +59,8 @@ class ShippingRate extends DataObject
                 'Shipping Quantity Range',
                 ShippingQuantityRange::get()->map()
             )->setEmptyString('Not Applicable'),
-            TextField::create('AmountPerUnit', 'Amount Per Unit')
+            TextField::create('ShippingCharge', 'Shipping Charge')
+                ->setDescription('For quantity based shipping, input the total charge for this range. For weight based shipping, input the multiplier per kg.')
         ));
 
         if ($this->exists() && $this->InternationalShippingCarrierID > 0) {
