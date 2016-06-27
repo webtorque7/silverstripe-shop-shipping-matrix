@@ -150,7 +150,7 @@ class InternationalShippingCarrier extends DataObject
                 ->leftJoin('ShippingWeightRange', '"ShippingWeightRange"."ID" = "ShippingRate"."ShippingWeightRangeID"')
                 ->where(sprintf('"InternationalShippingZoneID" = ' . $zone->ID . '
 				AND "ShippingWeightRange"."MinWeight" <= %s
-				AND "ShippingWeightRange"."MaxWeight" > %s', $totalWeight, $totalWeight))
+				AND "ShippingWeightRange"."MaxWeight" >= %s', $totalWeight, $totalWeight))
                 ->first();
 
             if (!empty($weightRate)) {
@@ -179,7 +179,7 @@ class InternationalShippingCarrier extends DataObject
                     '"ShippingQuantityRange"."ID" = "ShippingRate"."ShippingQuantityRangeID"')
                 ->where(sprintf('"InternationalShippingZoneID" = ' . $zone->ID . '
 				AND "ShippingQuantityRange"."MinQuantity" <= %s
-				AND "ShippingQuantityRange"."MaxQuantity" > %s', $totalQuantity, $totalQuantity))
+				AND "ShippingQuantityRange"."MaxQuantity" >= %s', $totalQuantity, $totalQuantity))
                 ->first();
 
             if (!empty($quantityRate)) {
@@ -189,6 +189,11 @@ class InternationalShippingCarrier extends DataObject
 					please contact us to explore other shipping methods.');
             }
         }
+
+
+
+
+
         return $quantityCharge;
     }
 
