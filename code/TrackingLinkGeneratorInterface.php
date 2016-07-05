@@ -13,7 +13,7 @@ interface TrackingLinkGeneratorInterface
      * @param Order $order
      * @return mixed
      */
-    public function getTrackingLink($trackingURL, Order $order);
+    public function getTrackingLink(Order $order);
 
     /**
      * @param $order Order
