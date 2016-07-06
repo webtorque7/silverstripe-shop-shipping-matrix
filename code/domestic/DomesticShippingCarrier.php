@@ -82,7 +82,7 @@ class DomesticShippingCarrier extends DataObject
 
     public function getTrackingLink($order)
     {
-        return $this->TrackerType ? singleton($this->TrackerType)->getTrackingLink($this->TrackingURL, $order) : false;
+        return $this->TrackerType ? singleton($this->TrackerType)->getTrackingLink($order) : false;
     }
 
     public static function process($items, $region = null)
