@@ -60,24 +60,6 @@ class ShippingMatrixModifier extends ShippingModifier
 			self::$last_error = $e->getMessage();
 		}
 
-		$userLocale = $order->UserLocale;
-
-		if($shippingCharge > 0 && $userLocale){
-			$userCountry = singleton('ShopStore')->CurrentStoreCountry($userLocale);
-			$storeCountry = singleton('ShopStore')->CurrentStoreCountry();
-
-			//convert only if the user is browsing in another store country.
-			if($userCountry->ID != $storeCountry->ID){
-				$currency = $userCountry->Currency;
-				$converter = DataObject::get_one('CurrencyConverter');
-				$conversionRate = $converter->CurrencyRates()->filter(array('Currency' => $currency))->first();
-
-				if($conversionRate && $conversionRate->exists()){
-					$shippingCharge = $shippingCharge * $conversionRate->Rate;
-				}
-			}
-		}
-
 		return $shippingCharge;
 	}
 
