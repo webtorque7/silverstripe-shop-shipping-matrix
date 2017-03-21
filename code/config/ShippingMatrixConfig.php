@@ -56,53 +56,56 @@ class ShippingMatrixConfig extends DataExtension
             'InternationalShippingZones',
             'DomesticShippingRegions',
         ));
-        $fields->addFieldToTab('Root', new TabSet('Shipping',
-            new Tab('Main',
-                CheckboxField::create('RoundUpWeight', 'Round up weight to the nearest kg?'),
-                CheckboxField::create('AllowPickup', 'Allow Pickup?'),
-                TextField::create('PickupText', 'Pickup Option Text'),
-                TextField::create('DomesticShippingText', 'Domestic Option Text'),
-                TextField::create('FreeShippingQuantity', 'Free Shipping Quantity')
-                    ->setDescription('set this to 0 to disable free shipping option'),
-                TextField::create('FreeShippingText', 'Free Shipping Option Text'),
-                HtmlEditorField::create('FreeShippingPromotion', 'Free Shipping Promotion')->setRows(5),
-                HtmlEditorField::create('InternationalShippingText', 'International Option Text')->setRows(5),
-                HtmlEditorField::create('ShippingMessage', 'Shipping Message'),
-                HtmlEditorField::create('InternationalShippingWarningMessage', 'International Shipping Warning Message')
-            ),
-            new Tab('Domestic',
-                GridField::create(
-                    'DomesticShippingRegion',
-                    'Domestic Shipping Region',
-                    $this->owner->DomesticShippingRegions(),
-                    GridFieldConfig_RecordEditor::create()
-                        ->addComponent(GridFieldOrderableRows::create('Sort'))
+
+        if($this->owner->exists()){
+            $fields->addFieldToTab('Root', new TabSet('Shipping',
+                new Tab('Main',
+                    CheckboxField::create('RoundUpWeight', 'Round up weight to the nearest kg?'),
+                    CheckboxField::create('AllowPickup', 'Allow Pickup?'),
+                    TextField::create('PickupText', 'Pickup Option Text'),
+                    TextField::create('DomesticShippingText', 'Domestic Option Text'),
+                    TextField::create('FreeShippingQuantity', 'Free Shipping Quantity')
+                        ->setDescription('set this to 0 to disable free shipping option'),
+                    TextField::create('FreeShippingText', 'Free Shipping Option Text'),
+                    HtmlEditorField::create('FreeShippingPromotion', 'Free Shipping Promotion')->setRows(5),
+                    HtmlEditorField::create('InternationalShippingText', 'International Option Text')->setRows(5),
+                    HtmlEditorField::create('ShippingMessage', 'Shipping Message'),
+                    HtmlEditorField::create('InternationalShippingWarningMessage', 'International Shipping Warning Message')
                 ),
-                GridField::create(
-                    'DomesticShippingCarriers',
-                    'Domestic Shipping Carriers',
-                    $this->owner->DomesticShippingCarriers(),
-                    GridFieldConfig_RecordEditor::create()
-                        ->addComponent(GridFieldOrderableRows::create('Sort'))
-                )
-            ),
-            new Tab('International',
-                GridField::create(
-                    'InternationalShippingZone',
-                    'International Shipping Zone',
-                    $this->owner->InternationalShippingZones(),
-                    GridFieldConfig_RecordEditor::create()
-                        ->addComponent(GridFieldOrderableRows::create('Sort'))
+                new Tab('Domestic',
+                    GridField::create(
+                        'DomesticShippingRegion',
+                        'Domestic Shipping Region',
+                        $this->owner->DomesticShippingRegions(),
+                        GridFieldConfig_RecordEditor::create()
+                            ->addComponent(GridFieldOrderableRows::create('Sort'))
+                    ),
+                    GridField::create(
+                        'DomesticShippingCarriers',
+                        'Domestic Shipping Carriers',
+                        $this->owner->DomesticShippingCarriers(),
+                        GridFieldConfig_RecordEditor::create()
+                            ->addComponent(GridFieldOrderableRows::create('Sort'))
+                    )
                 ),
-                GridField::create(
-                    'InternationalShippingCarriers',
-                    'International Shipping Carriers',
-                    $this->owner->InternationalShippingCarriers(),
-                    GridFieldConfig_RecordEditor::create()
-                        ->addComponent(GridFieldOrderableRows::create('Sort'))
+                new Tab('International',
+                    GridField::create(
+                        'InternationalShippingZone',
+                        'International Shipping Zone',
+                        $this->owner->InternationalShippingZones(),
+                        GridFieldConfig_RecordEditor::create()
+                            ->addComponent(GridFieldOrderableRows::create('Sort'))
+                    ),
+                    GridField::create(
+                        'InternationalShippingCarriers',
+                        'International Shipping Carriers',
+                        $this->owner->InternationalShippingCarriers(),
+                        GridFieldConfig_RecordEditor::create()
+                            ->addComponent(GridFieldOrderableRows::create('Sort'))
+                    )
                 )
-            )
-        ));
+            ));
+        }
     }
 
     public function canDelete($member = null)
