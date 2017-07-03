@@ -90,7 +90,13 @@ class DomesticShippingCarrier extends DataObject
         $extraCharge = 0;
         $carriers = array();
 
-        $shippingRegion = DomesticShippingRegion::get_shipping_region($region);
+        $totalQuantity = 0;
+        foreach ($items as $item) {
+            $totalQuantity += $item->Quantity;
+        }
+
+
+        $shippingRegion = DomesticShippingRegion::get_shipping_region($region, $totalQuantity);
         $unsupportedRegionException = new ShippingMatrixException('Selected region is not supported please contact us to arrange other shipping methods.');
 
         if (empty($shippingRegion)) {

@@ -18,7 +18,9 @@ class DomesticShippingRegion extends DataObject
 
     private static $has_one = array(
         'DomesticShippingCarrier' => 'DomesticShippingCarrier',
-        'ShippingMatrix' => 'StoreWarehouse'
+        'ShippingMatrix' => 'StoreWarehouse',
+
+        'ShippingQuantityRange' => 'ShippingQuantityRange'
     );
 
     private static $summary_fields = array(
@@ -36,14 +38,20 @@ class DomesticShippingRegion extends DataObject
         $fields->removeByName(array(
             'Sort',
             'ShippingMatrixID',
-            'DomesticShippingCarrierID'
+            'DomesticShippingCarrierID',
+            'ShippingQuantityRangeID'
         ));
 
         $fields->addFieldsToTab('Root.Main', array(
             TextField::create('Title', 'Title'),
             TextField::create('Region', 'Region'),
             TextField::create('Amount', 'Amount'),
-            CheckboxField::create('DefaultRegion', 'Default Region?')
+            CheckboxField::create('DefaultRegion', 'Default Region?'),
+            DropdownField::create(
+                'ShippingQuantityRangeID',
+                'Shipping Quantity Range',
+                ShippingQuantityRange::get()->map()
+            )->setEmptyString('Not Applicable'),
         ));
 
         return $fields;
@@ -57,11 +65,23 @@ class DomesticShippingRegion extends DataObject
         }
     }
 
-    public static function get_shipping_region($deliveryRegion)
+    public static function get_shipping_region($deliveryRegion = null, $quantity)
     {
         $availableRegions = self::get_available_regions();
         if (!empty($availableRegions)) {
-            $shippingRegion = $availableRegions->filter('Region', $deliveryRegion)->first();
+
+            if($deliveryRegion != null && $quantity > 0){
+                $shippingRegion = $availableRegions->leftJoin('ShippingQuantityRange',
+                    '"ShippingQuantityRange"."ID" = "DomesticShippingRegion"."ShippingQuantityRangeID"')
+                    ->where(sprintf('"Region" = \'' . $deliveryRegion . '\'
+				AND "ShippingQuantityRange"."MinQuantity" <= %s
+				AND "ShippingQuantityRange"."MaxQuantity" >= %s', $quantity, $quantity))
+                ->first();
+            }
+
+            if (empty($shippingRegion)) {
+                $shippingRegion = $availableRegions->filter(array('Region' => $deliveryRegion, 'ShippingQuantityRangeID' => 0))->first();
+            }
 
             if ($shippingRegion && $shippingRegion->exists()) {
                 return $shippingRegion;
