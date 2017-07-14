@@ -13,7 +13,8 @@ class DomesticShippingRegion extends DataObject
         'Region' => 'Text',
         'Sort' => 'Int',
         'Amount' => 'Currency',
-        'DefaultRegion' => 'Boolean'
+        'DefaultRegion' => 'Boolean',
+        'ExcludeFromFreeShipping' => 'Boolean'
     );
 
     private static $has_one = array(
@@ -47,6 +48,7 @@ class DomesticShippingRegion extends DataObject
             TextField::create('Region', 'Region'),
             TextField::create('Amount', 'Amount'),
             CheckboxField::create('DefaultRegion', 'Default Region?'),
+            CheckboxField::create('ExcludeFromFreeShipping', 'Exclude region from free shipping?'),
             DropdownField::create(
                 'ShippingQuantityRangeID',
                 'Shipping Quantity Range',
@@ -63,6 +65,12 @@ class DomesticShippingRegion extends DataObject
         if(!$this->Title){
             $this->Title = $this->Region;
         }
+    }
+
+    public static function exclude_free_shipping($deliveryRegion){
+        $availableRegions = self::get_available_regions();
+        $shippingRegion = $availableRegions->filter(array('Region' => $deliveryRegion, 'ShippingQuantityRangeID' => 0))->first();
+        return $shippingRegion->ExcludeFromFreeShipping;
     }
 
     public static function get_shipping_region($deliveryRegion = null, $quantity)

@@ -85,16 +85,26 @@ class DomesticShippingCarrier extends DataObject
         return $this->TrackerType ? singleton($this->TrackerType)->getTrackingLink($order) : false;
     }
 
-    public static function process($items, $region = null)
+    public static function process($order, $region = null)
     {
         $extraCharge = 0;
         $carriers = array();
+        $items = $order->Items();
 
         $totalQuantity = 0;
         foreach ($items as $item) {
             $totalQuantity += $item->Quantity;
         }
 
+        // turn off free shipping check from checkout page extension and conduct the check here because some regions are excluded from free shipping.
+        $wineQuantity = $order->getNumberOfWines();
+        $freeShippingQuantity = ShippingMatrixConfig::current()->FreeShippingQuantity;
+        if($freeShippingQuantity > 0 && $wineQuantity >= $freeShippingQuantity){
+            $excludeFreeShipping = DomesticShippingRegion::exclude_free_shipping($region);
+            if(!$excludeFreeShipping){
+                return array('Amount' => 0, 'Carriers' => '');
+            }
+        }
 
         $shippingRegion = DomesticShippingRegion::get_shipping_region($region, $totalQuantity);
         $unsupportedRegionException = new ShippingMatrixException('Selected region is not supported please contact us to arrange other shipping methods.');
