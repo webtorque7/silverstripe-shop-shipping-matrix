@@ -70,7 +70,11 @@ class DomesticShippingRegion extends DataObject
     public static function exclude_free_shipping($deliveryRegion){
         $availableRegions = self::get_available_regions();
         $shippingRegion = $availableRegions->filter(array('Region' => $deliveryRegion, 'ShippingQuantityRangeID' => 0))->first();
-        return $shippingRegion->ExcludeFromFreeShipping;
+        if($shippingRegion){
+            return $shippingRegion->ExcludeFromFreeShipping;
+        }
+
+        return false;
     }
 
     public static function get_shipping_region($deliveryRegion = null, $quantity)
