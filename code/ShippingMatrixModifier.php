@@ -46,14 +46,19 @@ class ShippingMatrixModifier extends ShippingModifier
 				$shippingCharge = $info['Amount'];
 				if ($order) {
 					$order->DomesticCarriers()->removeAll();
-					$order->DomesticCarriers()->addMany($info['Carriers']);
+					if(!empty($info['Carriers'])){
+                        $order->DomesticCarriers()->addMany($info['Carriers']);
+                    }
+
 				}
 			} else {
 				$info = InternationalShippingCarrier::process($items, $country);
 				$shippingCharge = $info['Amount'];
 				if ($order) {
 					$order->InternationalCarriers()->removeAll();
-					$order->InternationalCarriers()->addMany($info['Carriers']);
+                    if(!empty($info['Carriers'])){
+                        $order->InternationalCarriers()->addMany($info['Carriers']);
+                    }
 				}
 			}
 		} catch (ShippingMatrixException $e) {
