@@ -85,7 +85,7 @@ class DomesticShippingCarrier extends DataObject
         return $this->TrackerType ? singleton($this->TrackerType)->getTrackingLink($order) : false;
     }
 
-    public static function process($order, $region = null)
+    public static function process($order, $region = null, $country = null)
     {
         $extraCharge = 0;
         $carriers = array();
@@ -106,7 +106,7 @@ class DomesticShippingCarrier extends DataObject
             }
         }
 
-        $shippingRegion = DomesticShippingRegion::get_shipping_region($region, $totalQuantity);
+        $shippingRegion = DomesticShippingRegion::get_shipping_region($region, $country, $totalQuantity);
         $unsupportedRegionException = new ShippingMatrixException('Selected region is not supported please contact us to arrange other shipping methods.');
 
         if (empty($shippingRegion)) {

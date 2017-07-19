@@ -77,9 +77,9 @@ class DomesticShippingRegion extends DataObject
         return false;
     }
 
-    public static function get_shipping_region($deliveryRegion = null, $quantity)
+    public static function get_shipping_region($deliveryRegion = null, $deliveryCountry = null, $quantity)
     {
-        $availableRegions = self::get_available_regions();
+        $availableRegions = self::get_available_regions($deliveryCountry);
         if (!empty($availableRegions)) {
 
             if($deliveryRegion != null && $quantity > 0){
