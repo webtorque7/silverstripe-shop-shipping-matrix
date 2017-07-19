@@ -98,7 +98,7 @@ class DomesticShippingCarrier extends DataObject
 
         // turn off free shipping check from checkout page extension and conduct the check here because some regions are excluded from free shipping.
         $wineQuantity = $order->getNumberOfWines();
-        $freeShippingQuantity = ShippingMatrixConfig::current()->FreeShippingQuantity;
+        $freeShippingQuantity = ShippingMatrixConfig::current($country)->FreeShippingQuantity;
         if($freeShippingQuantity > 0 && $wineQuantity >= $freeShippingQuantity){
             $excludeFreeShipping = DomesticShippingRegion::exclude_free_shipping($region);
             if(!$excludeFreeShipping){
