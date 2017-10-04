@@ -85,7 +85,7 @@ class DomesticShippingRegion extends DataObject
             if($deliveryRegion != null && $quantity > 0){
                 $shippingRegion = $availableRegions->leftJoin('ShippingQuantityRange',
                     '"ShippingQuantityRange"."ID" = "DomesticShippingRegion"."ShippingQuantityRangeID"')
-                    ->where(sprintf('"Region" = \'' . $deliveryRegion . '\'
+                    ->where(sprintf('"Region" = \'' . Convert::raw2sql($deliveryRegion) . '\'
 				AND "ShippingQuantityRange"."MinQuantity" <= %s
 				AND "ShippingQuantityRange"."MaxQuantity" >= %s', $quantity, $quantity))
                 ->first();
