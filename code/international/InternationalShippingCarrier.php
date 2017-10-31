@@ -212,7 +212,7 @@ class InternationalShippingCarrier extends DataObject
 
         $productTypeArray = explode(',', $this->SupportedProductType);
 
-        if (in_array($product->ClassName, $productTypeArray)) {
+        if ($product && in_array($product->ClassName, $productTypeArray)) {
             array_push($this->items, $item);
         }
 
